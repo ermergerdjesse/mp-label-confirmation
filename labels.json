@@ -1,0 +1,37 @@
+[
+  {
+    "barcode": "JOB-104920",
+    "type": "Internal Press Job",
+    "jobId": "104920",
+    "destination": "HP Indigo Press 12000",
+    "service": "Cut & Stack Print Run"
+  },
+  {
+    "barcode": "JOB-104921",
+    "type": "Bindery Work Order",
+    "jobId": "104921",
+    "destination": "Horizon BQ-480 Perfect Binder",
+    "service": "PUR Perfect Binding"
+  },
+  {
+    "barcode": "1Z9999999999999999",
+    "type": "UPS Ground",
+    "jobId": "SH-40918",
+    "destination": "Chicago Distribution Center, IL",
+    "service": "UPS Ground Commercial"
+  },
+  {
+    "barcode": "9405511206214589218204",
+    "type": "USPS Ground Advantage",
+    "jobId": "SH-40919",
+    "destination": "Military Base FPO/APO Box 412",
+    "service": "Ground Advantage Military"
+  },
+  {
+    "barcode": "783492019283",
+    "type": "FedEx Ground",
+    "jobId": "SH-40920",
+    "destination": "Omaha Terminal, NE",
+    "service": "FedEx Home Delivery"
+  }
+]
