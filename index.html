@@ -3,93 +3,104 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Marathon Press - Shipping Pickup Station</title>
+  <title>Marathon Press - Shipping Pickup Verification</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;700;800;900&family=JetBrains+Mono:wght@600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css" />
 </head>
-<body class="theme-display">
-  <!-- Marathon Press Branded Header -->
-  <header class="top-bar">
-    <div class="brand">
-      <div class="brand-logo-mark">MP</div>
-      <div class="brand-text-wrap">
-        <span class="station-name">MARATHON PRESS</span>
-        <span class="station-sub">Shipping Verification • marathonpress.com</span>
+<body class="app-body">
+  <!-- Modern Clean Top Navigation -->
+  <header class="app-header">
+    <div class="brand-cluster">
+      <div class="brand-avatar">MP</div>
+      <div class="brand-details">
+        <span class="brand-title">Marathon Press</span>
+        <span class="brand-subtitle">Dispatch & Verification Console</span>
       </div>
     </div>
 
-    <!-- Scanner Capture Box -->
-    <div class="scan-bar-container">
+    <!-- Active Scanner Input Field -->
+    <div class="scanner-input-container">
+      <div class="input-icon">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"></path>
+          <line x1="7" y1="12" x2="17" y2="12"></line>
+        </svg>
+      </div>
       <input 
         type="text" 
         id="barcodeInput" 
-        placeholder="Scan or paste barcode..." 
+        placeholder="Ready to scan or paste barcode..." 
         autocomplete="off" 
         autofocus 
         spellcheck="false"
       />
-      <button type="button" id="submitScanBtn" class="pill-btn scan-go-btn">ENTER / VERIFY</button>
-      <span class="scan-status-pill" id="scannerStatusBadge">READY</span>
+      <button type="button" id="submitScanBtn" class="verify-btn">Verify</button>
+      <span class="status-indicator-pill" id="scannerStatusBadge">Active</span>
     </div>
 
-    <div class="top-controls">
-      <button id="soundToggleBtn" type="button" class="pill-btn" title="Toggle audio tone">AUDIO: ON</button>
-      <button id="historyToggleBtn" type="button" class="pill-btn" title="Toggle scan log drawer">LOG (<span id="statCount">0</span>)</button>
-      <button id="fullscreenBtn" type="button" class="pill-btn" title="Toggle Fullscreen">FULLSCREEN</button>
+    <!-- Utility Controls -->
+    <div class="header-actions">
+      <button id="soundToggleBtn" type="button" class="action-btn" title="Toggle audio chime">Audio: On</button>
+      <button id="historyToggleBtn" type="button" class="action-btn" title="Toggle scan history drawer">Log (<span id="statCount">0</span>)</button>
+      <button id="fullscreenBtn" type="button" class="action-btn" title="Toggle fullscreen mode">Fullscreen</button>
     </div>
   </header>
 
-  <!-- GIGANTIC BILLBOARD SCREEN -->
-  <main class="billboard-container" id="billboardScreen">
-    <div class="display-card idle" id="displayCard">
-      <!-- Top Status Badge -->
-      <div class="sign-status" id="signStatus">
-        <span class="status-badge-text" id="statusBadgeText">READY</span>
+  <!-- High-Visibility Terminal Stage -->
+  <main class="terminal-stage">
+    <section class="display-panel idle" id="displayCard">
+      <!-- Status Badge -->
+      <div class="badge-wrapper">
+        <div class="status-pill" id="statusBadge">
+          <span class="status-dot" id="statusDot"></span>
+          <span class="status-label" id="statusBadgeText">Ready for Scan</span>
+        </div>
       </div>
 
-      <!-- Giant Carrier Pickup Destination -->
-      <div class="sign-destination" id="signDestination">
-        SCAN BARCODE
+      <!-- Giant Primary Carrier Destination -->
+      <div class="carrier-display" id="signDestination">
+        Ready
       </div>
 
-      <!-- Service Sub-line -->
-      <div class="sign-subdest" id="signSubdest">Awaiting package scan</div>
-
-      <!-- High-contrast Monospace Barcode Number -->
-      <div class="sign-barcode" id="signBarcode">
-        READY
+      <!-- Secondary Service Clarification -->
+      <div class="service-display" id="signSubdest">
+        Scan package shipping label to verify pickup lane
       </div>
-    </div>
+
+      <!-- Clean Monospace Barcode Tag -->
+      <div class="barcode-tag" id="signBarcode">
+        Awaiting input
+      </div>
+    </section>
   </main>
 
-  <!-- Slide-in Audit Log Drawer -->
-  <aside class="log-drawer" id="logDrawer">
-    <div class="drawer-header">
+  <!-- Slide-over History Drawer -->
+  <aside class="history-drawer" id="logDrawer">
+    <div class="drawer-top">
       <div>
-        <h3>Marathon Press - Scan History Log</h3>
-        <span class="text-dim text-xs">marathonpress.com</span>
+        <h3>Activity Log</h3>
+        <p class="drawer-caption">Current shift scans & timestamps</p>
       </div>
-      <div class="drawer-btns">
-        <button id="exportCsvBtn" type="button" class="pill-btn sm">EXPORT CSV</button>
-        <button id="clearLogBtn" type="button" class="pill-btn sm danger">CLEAR</button>
-        <button id="closeDrawerBtn" type="button" class="pill-btn sm">CLOSE</button>
+      <div class="drawer-buttons">
+        <button id="exportCsvBtn" type="button" class="drawer-btn">Export CSV</button>
+        <button id="clearLogBtn" type="button" class="drawer-btn danger">Clear</button>
+        <button id="closeDrawerBtn" type="button" class="drawer-btn close">✕</button>
       </div>
     </div>
-    <div class="table-wrap">
-      <table class="history-table">
+    <div class="table-scroll">
+      <table class="log-table">
         <thead>
           <tr>
             <th>Time</th>
             <th>Barcode</th>
             <th>Carrier</th>
-            <th>Service Type</th>
+            <th>Service</th>
             <th>Status</th>
           </tr>
         </thead>
-        <tbody id="scanHistoryBody">
-        </tbody>
+        <tbody id="scanHistoryBody"></tbody>
       </table>
     </div>
   </aside>

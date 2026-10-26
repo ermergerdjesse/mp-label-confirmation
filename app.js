@@ -1,4 +1,4 @@
-// Marathon Press Shipping Verification Engine (marathonpress.com)
+// Marathon Press Dispatch & Verification Console
 (function() {
   let knownLabels = [];
   let scanHistory = [];
@@ -50,20 +50,20 @@
       osc.connect(gain);
       gain.connect(audioCtx.destination);
       if (success) {
-        osc.frequency.setValueAtTime(940, audioCtx.currentTime);
-        gain.gain.setValueAtTime(0.25, audioCtx.currentTime);
+        osc.frequency.setValueAtTime(880, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.18, audioCtx.currentTime);
         osc.start();
-        osc.stop(audioCtx.currentTime + 0.12);
+        osc.stop(audioCtx.currentTime + 0.10);
       } else {
         osc.frequency.setValueAtTime(220, audioCtx.currentTime);
-        gain.gain.setValueAtTime(0.35, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.25, audioCtx.currentTime);
         osc.start();
-        osc.stop(audioCtx.currentTime + 0.35);
+        osc.stop(audioCtx.currentTime + 0.30);
       }
     } catch(e) {}
   }
 
-  // CARRIER & SERVICE DETERMINATION
+  // CARRIER & SERVICE DETERMINATION - STRICT CLEAN ROUTING
   function parseCarrierRoute(raw) {
     const code = (raw || '').replace(/[^a-zA-Z0-9]/g, '').trim();
     if (!code) return null;
@@ -78,13 +78,12 @@
       return {
         barcode: record.barcode,
         destination: record.destination || record.carrier,
-        service: record.service || record.subNote || '',
+        service: record.service || '',
         verified: true
       };
     }
 
     // 2. UPS MAIL INNOVATIONS (UPSMI)
-    // 18-24 digits starting with 80 or 82, or starting with 92748
     if (/^80\d{16,24}$/.test(code) || /^82\d{16,24}$/.test(code) || /^92748\d+$/.test(code)) {
       return {
         barcode: code,
@@ -95,7 +94,6 @@
     }
 
     // 3. DHL ECOMMERCE / EXPRESS
-    // GS1-128 postal routing code starting with 420[ZIP]92419... / 93419...
     if (/^420\d{5}(92419|93419|94419)\d+$/i.test(code) || /^(92419|93419|94419)\d{15,}$/.test(code)) {
       return {
         barcode: code,
@@ -104,7 +102,6 @@
         verified: true
       };
     }
-    // DHL Express Airway bill (10 digits)
     if (/^\d{10}$/.test(code)) {
       return {
         barcode: code,
@@ -115,7 +112,7 @@
     }
 
     // 4. FEDEX GROUND (Consolidated Ground & SmartPost)
-    // A. 15-digit or 20-digit barcodes or 96... GS1 barcodes
+    // 15-digit, 20-digit, 96... GS1 barcodes
     if (/^\d{15}$/.test(code) || /^00\d{18}$/.test(code) || /^96\d{20,}/.test(code)) {
       return {
         barcode: code,
@@ -124,9 +121,7 @@
         verified: true
       };
     }
-
-    // B. 12-digit FedEx Ground / SmartPost (prefixes 30... through 39...)
-    // Examples: 384322836030, 384315914220, 384322828226
+    // 12-digit FedEx Ground / SmartPost (prefixes 30... through 39...)
     if (/^(30|31|32|33|34|35|36|37|38|39)\d{10}$/.test(code)) {
       return {
         barcode: code,
@@ -137,8 +132,6 @@
     }
 
     // 5. FEDEX EXPRESS (Express 2Day, Priority, Standard)
-    // 12-digit Express tracking numbers (prefixes starting with 7, 8, 9, 4, 5, 6, 1, 2)
-    // Example: 879136980972
     if (/^\d{12}$/.test(code)) {
       return {
         barcode: code,
@@ -148,7 +141,7 @@
       };
     }
 
-    // 6. UPS (Unified Ground + Air into one "UPS" destination)
+    // 6. UPS (All UPS Ground & Air consolidated into one "UPS")
     if (/^1Z[0-9A-Z]{16}$/i.test(code)) {
       return {
         barcode: code,
@@ -158,12 +151,13 @@
       };
     }
 
-    // 7. USPS (Clean "USPS" destination)
+    // 7. USPS (Strictly displays "USPS" - NO "Mail Cage")
+    // Barcodes starting with 92, 93, 94, 95 or 420 (e.g. 9400150105800133120300)
     if (/^9[2-5]\d{20}/.test(code) || /^420\d{27}/.test(code)) {
       return {
         barcode: code,
         destination: 'USPS',
-        service: 'USPS Postal',
+        service: 'Postal Pickup',
         verified: true
       };
     }
@@ -172,8 +166,8 @@
     if (/^JOB/i.test(code)) {
       return {
         barcode: code,
-        destination: 'Press & Bindery Lane',
-        service: 'Internal Work Order',
+        destination: 'Internal Job',
+        service: 'Bindery / Press Staging',
         verified: true
       };
     }
@@ -181,8 +175,8 @@
     // Fallback unverified
     return {
       barcode: code,
-      destination: 'UNREGISTERED',
-      service: 'Unrecognized Barcode',
+      destination: 'Unrecognized Label',
+      service: 'Check label format or route manually',
       verified: false
     };
   }
@@ -199,17 +193,17 @@
     const time = new Date().toLocaleTimeString();
 
     if (result.verified) {
-      cardEl.className = 'display-card success';
-      statusBadgeText.innerText = 'VERIFIED';
+      cardEl.className = 'display-panel success';
+      statusBadgeText.innerText = 'Verified';
       destEl.innerText = result.destination;
       subdestEl.innerText = result.service;
       barcodeDisplayEl.innerText = result.barcode;
       playTone(true);
     } else {
-      cardEl.className = 'display-card danger';
-      statusBadgeText.innerText = 'UNKNOWN';
-      destEl.innerText = 'UNRECOGNIZED BARCODE';
-      subdestEl.innerText = 'Re-scan or set aside for review';
+      cardEl.className = 'display-panel danger';
+      statusBadgeText.innerText = 'Not Recognized';
+      destEl.innerText = result.destination;
+      subdestEl.innerText = result.service;
       barcodeDisplayEl.innerText = result.barcode;
       playTone(false);
     }
@@ -220,7 +214,7 @@
       barcode: result.barcode,
       destination: result.destination,
       service: result.service,
-      status: result.verified ? 'VERIFIED' : 'FAILED'
+      status: result.verified ? 'Verified' : 'Failed'
     });
 
     if (statCount) statCount.innerText = scanHistory.length;
@@ -229,8 +223,8 @@
     // Reset input
     inputEl.value = '';
     if (badgeEl) {
-      badgeEl.innerText = 'READY';
-      badgeEl.className = 'scan-status-pill';
+      badgeEl.innerText = 'Active';
+      badgeEl.className = 'status-indicator-pill';
     }
     inputEl.focus();
   }
@@ -243,16 +237,12 @@
         <td>${item.barcode}</td>
         <td>${item.destination}</td>
         <td>${item.service}</td>
-        <td><span class="${item.status === 'VERIFIED' ? 'log-success' : 'log-danger'}">${item.status}</span></td>
+        <td><span class="${item.status === 'Verified' ? 'tag-verified' : 'tag-failed'}">${item.status}</span></td>
       </tr>
     `).join('');
   }
 
-  // ==========================================
-  // EVENT LISTENERS
-  // ==========================================
-
-  // Enter key via keydown
+  // Event Listeners
   inputEl.addEventListener('keydown', function(e) {
     if (e.key === 'Enter' || e.keyCode === 13) {
       e.preventDefault();
@@ -260,7 +250,6 @@
     }
   });
 
-  // Enter key via keyup
   inputEl.addEventListener('keyup', function(e) {
     if (e.key === 'Enter' || e.keyCode === 13) {
       e.preventDefault();
@@ -268,14 +257,12 @@
     }
   });
 
-  // Instant trigger on PASTE
   inputEl.addEventListener('paste', function() {
     setTimeout(function() {
       triggerVerification();
     }, 20);
   });
 
-  // Manual "ENTER / VERIFY" Button Click
   if (submitBtn) {
     submitBtn.addEventListener('click', function(e) {
       e.preventDefault();
@@ -283,20 +270,19 @@
     });
   }
 
-  // Hardware scanner rapid stream auto-trigger
   inputEl.addEventListener('input', function() {
     clearTimeout(debounceTimer);
     const val = inputEl.value.trim();
     if (!val) {
       if (badgeEl) {
-        badgeEl.innerText = 'READY';
-        badgeEl.className = 'scan-status-pill';
+        badgeEl.innerText = 'Active';
+        badgeEl.className = 'status-indicator-pill';
       }
       return;
     }
     if (badgeEl) {
-      badgeEl.innerText = 'TYPING...';
-      badgeEl.className = 'scan-status-pill scanning';
+      badgeEl.innerText = 'Reading';
+      badgeEl.className = 'status-indicator-pill busy';
     }
 
     debounceTimer = setTimeout(function() {
@@ -310,7 +296,7 @@
   if (soundBtn) {
     soundBtn.addEventListener('click', function() {
       soundEnabled = !soundEnabled;
-      soundBtn.innerText = soundEnabled ? 'AUDIO: ON' : 'AUDIO: MUTED';
+      soundBtn.innerText = soundEnabled ? 'Audio: On' : 'Audio: Off';
       inputEl.focus();
     });
   }
@@ -351,10 +337,10 @@
     fullscreenBtn.addEventListener('click', function() {
       if (!document.fullscreenElement) {
         document.documentElement.requestFullscreen().catch(() => {});
-        fullscreenBtn.innerText = 'EXIT FULLSCREEN';
+        fullscreenBtn.innerText = 'Exit Fullscreen';
       } else {
         document.exitFullscreen().catch(() => {});
-        fullscreenBtn.innerText = 'FULLSCREEN';
+        fullscreenBtn.innerText = 'Fullscreen';
       }
       inputEl.focus();
     });

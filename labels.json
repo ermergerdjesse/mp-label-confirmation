@@ -1,5 +1,17 @@
 [
   {
+    "barcode": "9400150105800133120300",
+    "carrier": "USPS",
+    "destination": "USPS",
+    "service": "Postal Pickup"
+  },
+  {
+    "barcode": "9405511206214589218204",
+    "carrier": "USPS",
+    "destination": "USPS",
+    "service": "Postal Pickup"
+  },
+  {
     "barcode": "879136980972",
     "carrier": "FedEx",
     "destination": "FedEx Express",
@@ -52,11 +64,5 @@
     "carrier": "UPS",
     "destination": "UPS",
     "service": "UPS Pickup"
-  },
-  {
-    "barcode": "9405511206214589218204",
-    "carrier": "USPS",
-    "destination": "USPS",
-    "service": "USPS Postal"
   }
 ]
