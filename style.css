@@ -67,16 +67,16 @@ html, body {
   color: var(--text-dim);
 }
 
-/* Scanner Input Field */
+/* Scanner Input Field & Form */
 .scan-bar-container {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   background: #141a24;
   border: 1px solid #2d3848;
-  padding: 4px 12px;
+  padding: 4px 8px 4px 12px;
   border-radius: 8px;
-  width: 400px;
+  width: 440px;
 }
 
 .scan-bar-container input {
@@ -87,14 +87,27 @@ html, body {
   font-family: var(--font-mono);
   font-size: 15px;
   font-weight: 600;
-  width: 100%;
+  flex: 1;
+  min-width: 0;
+}
+
+.scan-go-btn {
+  background: #1f6feb !important;
+  color: #fff !important;
+  border-color: #388bfd !important;
+  padding: 4px 10px !important;
+  font-size: 11px !important;
+}
+
+.scan-go-btn:hover {
+  background: #388bfd !important;
 }
 
 .scan-status-pill {
   font-size: 11px;
   font-weight: 700;
   font-family: var(--font-mono);
-  padding: 3px 8px;
+  padding: 4px 8px;
   border-radius: 4px;
   background: #232c3a;
   color: var(--text-dim);
@@ -234,7 +247,7 @@ html, body {
   line-height: 1.1;
 }
 
-/* GIGANTIC CARRIER PICKUP DESTINATION (e.g. FedEx Ground or FedEx Express) */
+/* GIGANTIC CARRIER PICKUP DESTINATION */
 .sign-destination {
   font-size: clamp(48px, 7.8vw, 114px);
   font-weight: 900;
@@ -259,7 +272,7 @@ html, body {
 /* BOTTOM BARCODE NUMBER */
 .sign-barcode {
   font-family: var(--font-mono);
-  font-size: clamp(22px, 3vw, 44px);
+  font-size: clamp(20px, 2.5vw, 38px);
   font-weight: 800;
   color: #e2e8f0;
   letter-spacing: 2px;
@@ -268,6 +281,8 @@ html, body {
   border-radius: 8px;
   background-color: rgba(0, 0, 0, 0.6);
   border: 1px solid rgba(255, 255, 255, 0.15);
+  max-width: 95%;
+  word-break: break-all;
 }
 
 /* =========================================
