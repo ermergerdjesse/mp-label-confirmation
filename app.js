@@ -1,355 +1,239 @@
-// Shipping Pickup Verification Engine
-document.addEventListener('DOMContentLoaded', () => {
+// Shipping Pickup Verification Engine - Direct Execution
+(function() {
   let knownLabels = [];
   let scanHistory = [];
   let soundEnabled = true;
-  
-  // Timer for automatic scan detection
-  let completionTimer = null;
-  const COMPLETION_DELAY_MS = 250;
+  let debounceTimer = null;
 
-  // DOM Elements
-  const scanForm = document.getElementById('scanForm');
-  const barcodeInput = document.getElementById('barcodeInput');
-  const scannerStatusBadge = document.getElementById('scannerStatusBadge');
-  const displayCard = document.getElementById('displayCard');
+  // Cache elements
+  const inputEl = document.getElementById('barcodeInput');
+  const submitBtn = document.getElementById('submitScanBtn');
+  const badgeEl = document.getElementById('scannerStatusBadge');
+  const cardEl = document.getElementById('displayCard');
   const statusBadgeText = document.getElementById('statusBadgeText');
-  const signSubheading = document.getElementById('signSubheading');
-  const signDestination = document.getElementById('signDestination');
-  const signSubdest = document.getElementById('signSubdest');
-  const signBarcode = document.getElementById('signBarcode');
-
-  // Controls & Drawer
-  const soundToggleBtn = document.getElementById('soundToggleBtn');
-  const historyToggleBtn = document.getElementById('historyToggleBtn');
-  const logDrawer = document.getElementById('logDrawer');
-  const closeDrawerBtn = document.getElementById('closeDrawerBtn');
-  const scanHistoryBody = document.getElementById('scanHistoryBody');
+  const subheadingEl = document.getElementById('signSubheading');
+  const destEl = document.getElementById('signDestination');
+  const subdestEl = document.getElementById('signSubdest');
+  const barcodeDisplayEl = document.getElementById('signBarcode');
   const statCount = document.getElementById('statCount');
+  const historyBody = document.getElementById('scanHistoryBody');
+  const soundBtn = document.getElementById('soundToggleBtn');
+  const historyBtn = document.getElementById('historyToggleBtn');
+  const closeDrawerBtn = document.getElementById('closeDrawerBtn');
+  const logDrawer = document.getElementById('logDrawer');
   const clearLogBtn = document.getElementById('clearLogBtn');
   const exportCsvBtn = document.getElementById('exportCsvBtn');
   const fullscreenBtn = document.getElementById('fullscreenBtn');
 
-  // Load database
+  // Load database safely
   fetch('labels.json')
     .then(r => r.json())
     .then(data => {
-      knownLabels = data;
+      knownLabels = Array.isArray(data) ? data : [];
     })
     .catch(() => {
-      console.warn('labels.json not loaded; carrier heuristic routing active.');
+      knownLabels = [];
     });
 
-  // Keep input focused automatically
-  function forceFocus() {
-    if (document.activeElement !== barcodeInput && !logDrawer.classList.contains('open')) {
-      barcodeInput.focus();
-    }
-  }
-
-  window.addEventListener('click', (e) => {
-    if (!['BUTTON', 'A'].includes(e.target.tagName)) {
-      barcodeInput.focus();
-    }
-  });
-
-  setInterval(forceFocus, 1000);
-
-  // Web Audio Tone Synthesizer
+  // Sound Synth
   let audioCtx = null;
-  function getAudioContext() {
-    if (!audioCtx) {
-      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    }
-    if (audioCtx.state === 'suspended') {
-      audioCtx.resume();
-    }
-    return audioCtx;
-  }
-
-  function playTone(isSuccess = true) {
+  function playTone(success) {
     if (!soundEnabled) return;
     try {
-      const ctx = getAudioContext();
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      if (isSuccess) {
-        osc.frequency.setValueAtTime(940, ctx.currentTime);
-        gain.gain.setValueAtTime(0.25, ctx.currentTime);
-        osc.start();
-        osc.stop(ctx.currentTime + 0.12);
-      } else {
-        osc.frequency.setValueAtTime(220, ctx.currentTime);
-        gain.gain.setValueAtTime(0.35, ctx.currentTime);
-        osc.start();
-        osc.stop(ctx.currentTime + 0.35);
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
       }
-    } catch(e) {
-      console.warn('Audio tone could not play', e);
-    }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      if (success) {
+        osc.frequency.setValueAtTime(940, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.25, audioCtx.currentTime);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.12);
+      } else {
+        osc.frequency.setValueAtTime(220, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.35, audioCtx.currentTime);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.35);
+      }
+    } catch(e) {}
   }
 
-  soundToggleBtn.addEventListener('click', () => {
-    soundEnabled = !soundEnabled;
-    soundToggleBtn.innerText = soundEnabled ? 'AUDIO: ON' : 'AUDIO: MUTED';
-    barcodeInput.focus();
-  });
-
-  // Form Submit Handler
-  scanForm.addEventListener('submit', (e) => {
-    e.preventDefault();
-    clearTimeout(completionTimer);
-    executeCurrentScan();
-  });
-
-  // Direct Enter Keypress Trap
-  barcodeInput.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' || e.keyCode === 13) {
-      e.preventDefault();
-      clearTimeout(completionTimer);
-      executeCurrentScan();
-    }
-  });
-
-  // Automatic input stream debounce
-  barcodeInput.addEventListener('input', () => {
-    clearTimeout(completionTimer);
-    const val = barcodeInput.value.trim();
-
-    if (val.length === 0) {
-      scannerStatusBadge.innerText = 'READY';
-      scannerStatusBadge.className = 'scan-status-pill';
-      return;
-    }
-
-    scannerStatusBadge.innerText = 'READING...';
-    scannerStatusBadge.className = 'scan-status-pill scanning';
-
-    completionTimer = setTimeout(() => {
-      executeCurrentScan();
-    }, COMPLETION_DELAY_MS);
-  });
-
-  function executeCurrentScan() {
-    clearTimeout(completionTimer);
-    const raw = barcodeInput.value;
-    processScan(raw);
-  }
-
-  // Main Scan Processing & Carrier Verification
-  function processScan(rawCode) {
-    const code = (rawCode || '').trim();
-    if (!code) {
-      scannerStatusBadge.innerText = 'READY';
-      scannerStatusBadge.className = 'scan-status-pill';
-      return;
-    }
-
-    scannerStatusBadge.innerText = 'PROCESSING...';
-
-    const timestamp = new Date().toLocaleTimeString();
-    const routeInfo = parseCarrierRoute(code);
-
-    if (routeInfo.verified) {
-      setBillboard(
-        'success',
-        'VERIFIED',
-        'SCANNED & VERIFIED',
-        routeInfo.primaryLocation,
-        routeInfo.subNote,
-        routeInfo.barcode
-      );
-      playTone(true);
-    } else {
-      setBillboard(
-        'danger',
-        'UNKNOWN',
-        'DO NOT PLACE - NOT VERIFIED',
-        'UNRECOGNIZED BARCODE',
-        'Re-scan or set aside for review',
-        code
-      );
-      playTone(false);
-    }
-
-    // Add to history log
-    scanHistory.unshift({
-      time: timestamp,
-      barcode: code,
-      destination: routeInfo.primaryLocation,
-      service: routeInfo.subNote || 'Standard',
-      status: routeInfo.verified ? 'VERIFIED' : 'FAILED'
-    });
-
-    statCount.innerText = scanHistory.length;
-    renderLog();
-
-    // Reset input and refocus immediately
-    barcodeInput.value = '';
-    scannerStatusBadge.innerText = 'READY';
-    scannerStatusBadge.className = 'scan-status-pill';
-    barcodeInput.focus();
-  }
-
-  // ACCURATE CARRIER & SERVICE DETERMINATION (Including DHL & UPSMI)
+  // Carrier identification logic
   function parseCarrierRoute(raw) {
-    const code = raw.replace(/[^a-zA-Z0-9]/g, '').trim();
+    const code = (raw || '').replace(/[^a-zA-Z0-9]/g, '').trim();
+    if (!code) return null;
 
-    // 1. Direct database match in labels.json
+    // 1. Direct database match
     const record = knownLabels.find(l => {
-      const cleanDB = (l.barcode || '').replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
-      return cleanDB === code.toLowerCase();
+      const dbCode = (l.barcode || '').replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+      return dbCode === code.toLowerCase();
     });
 
     if (record) {
       return {
         barcode: record.barcode,
-        primaryLocation: record.destination || record.carrier,
-        subNote: record.service || record.subNote || '',
+        destination: record.destination || record.carrier,
+        service: record.service || record.subNote || '',
         verified: true
       };
     }
 
-    // 2. UPS MAIL INNOVATIONS (UPSMI)
-    // Format: 18-34 digits starting with 80, 82, or 92748 (e.g. 803364829621565082)
+    // 2. UPS Mail Innovations (UPSMI)
     if (/^80\d{16,24}$/.test(code) || /^82\d{16,24}$/.test(code) || /^92748\d+$/.test(code)) {
       return {
-        barcode: raw,
-        primaryLocation: 'UPSMI',
-        subNote: 'UPS Mail Innovations (Postal Delivery)',
+        barcode: code,
+        destination: 'UPSMI',
+        service: 'UPS Mail Innovations',
         verified: true
       };
     }
 
-    // 3. DHL ECOMMERCE / DHL PARCEL
-    // Format: GS1-128 postal routing code starting with 420[ZIP]92419... / 93419... or 420 followed by 92419
-    // DHL eCommerce Mailer ID is typically 92419 or 93419
+    // 3. DHL eCommerce / Express
     if (/^420\d{5}(92419|93419|94419)\d+$/i.test(code) || /^(92419|93419|94419)\d{15,}$/.test(code)) {
       return {
-        barcode: raw,
-        primaryLocation: 'DHL',
-        subNote: 'DHL eCommerce Pickup',
+        barcode: code,
+        destination: 'DHL',
+        service: 'DHL eCommerce',
         verified: true
       };
     }
-
-    // Standard DHL Express format (10 digits)
     if (/^\d{10}$/.test(code)) {
       return {
-        barcode: raw,
-        primaryLocation: 'DHL Express',
-        subNote: 'DHL Express Airway Bill',
+        barcode: code,
+        destination: 'DHL Express',
+        service: 'DHL Express Airway Bill',
         verified: true
       };
     }
 
-    // 4. FEDEX GROUND vs FEDEX EXPRESS
-    // A. FedEx Ground 96 GS1 barcode (20+ digits starting with 96)
-    if (/^96\d{20,}/.test(code)) {
-      return {
-        barcode: raw,
-        primaryLocation: 'FedEx Ground',
-        subNote: 'Package Barcode (96 GS1)',
-        verified: true
-      };
-    }
-
-    // B. FedEx Ground Barcode (Standard 15 digits or 20 digits starting with 00, 02, 04, 15)
-    if (/^\d{15}$/.test(code) || /^00\d{18}$/.test(code)) {
-      return {
-        barcode: raw,
-        primaryLocation: 'FedEx Ground',
-        subNote: 'Ground Commercial / Home Delivery',
-        verified: true
-      };
-    }
-
-    // C. FedEx Express Barcode (Standard 12 digits: e.g. 879136980972)
+    // 4. FedEx Express (Standard 12 digits, e.g. 384322828226 or 879136980972)
     if (/^\d{12}$/.test(code)) {
       return {
-        barcode: raw,
-        primaryLocation: 'FedEx Express',
-        subNote: 'Express Air Priority / Standard',
+        barcode: code,
+        destination: 'FedEx Express',
+        service: 'Express Air Priority',
         verified: true
       };
     }
 
-    // 5. UPS STANDARD & AIR (1Z...)
-    if (/^1Z[0-9A-Z]{16}$/i.test(code)) {
-      const serviceCode = code.substring(8, 10).toUpperCase();
-      let upsService = 'Ground Commercial Pickup';
-      let upsLocation = 'UPS Ground';
-
-      if (['01', '13', '14'].includes(serviceCode)) {
-        upsLocation = 'UPS Next Day Air';
-        upsService = 'Air Express Pickup';
-      } else if (['02', '59'].includes(serviceCode)) {
-        upsLocation = 'UPS 2nd Day Air';
-        upsService = 'Air Express Pickup';
-      }
-
+    // 5. FedEx Ground (15 digits, 20 digits, or 96...)
+    if (/^\d{15}$/.test(code) || /^00\d{18}$/.test(code) || /^96\d{20,}/.test(code)) {
       return {
-        barcode: raw,
-        primaryLocation: upsLocation,
-        subNote: upsService,
+        barcode: code,
+        destination: 'FedEx Ground',
+        service: 'Ground Commercial / Home Delivery',
         verified: true
       };
     }
 
-    // 6. USPS POSTAL
-    // USPS barcodes typically start with 92, 93, 94, 95 or 420[ZIP]9... (excluding DHL 92419 above)
+    // 6. UPS Ground / Air (1Z...)
+    if (/^1Z[0-9A-Z]{16}$/i.test(code)) {
+      const sc = code.substring(8, 10).toUpperCase();
+      let loc = 'UPS Ground';
+      let srv = 'Ground Commercial';
+      if (['01', '13', '14'].includes(sc)) {
+        loc = 'UPS Next Day Air';
+        srv = 'Air Express Pickup';
+      } else if (['02', '59'].includes(sc)) {
+        loc = 'UPS 2nd Day Air';
+        srv = 'Air Express Pickup';
+      }
+      return {
+        barcode: code,
+        destination: loc,
+        service: srv,
+        verified: true
+      };
+    }
+
+    // 7. USPS Postal
     if (/^9[2-5]\d{20}/.test(code) || /^420\d{27}/.test(code)) {
       return {
-        barcode: raw,
-        primaryLocation: 'USPS Mail Cage',
-        subNote: 'Ground Advantage / Priority',
+        barcode: code,
+        destination: 'USPS Mail Cage',
+        service: 'Ground Advantage / Priority',
         verified: true
       };
     }
 
-    // 7. INTERNAL PRODUCTION ORDERS
-    if (/^JOB\d+$/i.test(code) || /^JOB-\d+$/i.test(raw)) {
+    // 8. Internal job
+    if (/^JOB/i.test(code)) {
       return {
-        barcode: raw,
-        primaryLocation: 'Press & Bindery Lane',
-        subNote: 'Internal Production Work Order',
+        barcode: code,
+        destination: 'Press & Bindery Lane',
+        service: 'Internal Work Order',
         verified: true
       };
     }
 
     // Fallback unverified
     return {
-      barcode: raw,
-      primaryLocation: 'UNREGISTERED',
-      subNote: 'Unrecognized Barcode',
+      barcode: code,
+      destination: 'UNREGISTERED',
+      service: 'Unrecognized Barcode',
       verified: false
     };
   }
 
-  // Update Billboard Screen
-  function setBillboard(mode, statText, subhead, mainSpot, subSpot, barcode) {
-    displayCard.className = `display-card ${mode}`;
-    statusBadgeText.innerText = statText;
-    signSubheading.innerText = subhead;
-    signDestination.innerText = mainSpot;
-    signSubdest.innerText = subSpot || '';
-    signBarcode.innerText = barcode;
+  // Core execution function
+  function triggerVerification() {
+    clearTimeout(debounceTimer);
+    const rawVal = inputEl.value;
+    if (!rawVal || !rawVal.trim()) return;
+
+    const result = parseCarrierRoute(rawVal);
+    if (!result) return;
+
+    const time = new Date().toLocaleTimeString();
+
+    if (result.verified) {
+      cardEl.className = 'display-card success';
+      statusBadgeText.innerText = 'VERIFIED';
+      subheadingEl.innerText = 'SCANNED & VERIFIED';
+      destEl.innerText = result.destination;
+      subdestEl.innerText = result.service;
+      barcodeDisplayEl.innerText = result.barcode;
+      playTone(true);
+    } else {
+      cardEl.className = 'display-card danger';
+      statusBadgeText.innerText = 'UNKNOWN';
+      subheadingEl.innerText = 'DO NOT PLACE - NOT VERIFIED';
+      destEl.innerText = 'UNRECOGNIZED BARCODE';
+      subdestEl.innerText = 'Re-scan or set aside for review';
+      barcodeDisplayEl.innerText = result.barcode;
+      playTone(false);
+    }
+
+    // History log
+    scanHistory.unshift({
+      time: time,
+      barcode: result.barcode,
+      destination: result.destination,
+      service: result.service,
+      status: result.verified ? 'VERIFIED' : 'FAILED'
+    });
+
+    if (statCount) statCount.innerText = scanHistory.length;
+    renderLog();
+
+    // Reset input
+    inputEl.value = '';
+    if (badgeEl) {
+      badgeEl.innerText = 'READY';
+      badgeEl.className = 'scan-status-pill';
+    }
+    inputEl.focus();
   }
 
-  // Log Drawer Controls
-  historyToggleBtn.addEventListener('click', () => {
-    logDrawer.classList.toggle('open');
-  });
-
-  closeDrawerBtn.addEventListener('click', () => {
-    logDrawer.classList.remove('open');
-    barcodeInput.focus();
-  });
-
   function renderLog() {
-    scanHistoryBody.innerHTML = scanHistory.map(item => `
+    if (!historyBody) return;
+    historyBody.innerHTML = scanHistory.map(item => `
       <tr>
         <td>${item.time}</td>
         <td>${item.barcode}</td>
@@ -360,33 +244,125 @@ document.addEventListener('DOMContentLoaded', () => {
     `).join('');
   }
 
-  clearLogBtn.addEventListener('click', () => {
-    if (confirm('Clear scan history?')) {
+  // ==========================================
+  // EVENT LISTENERS (ROBUST & MULTI-TRIGGER)
+  // ==========================================
+
+  // 1. Enter key via keydown
+  inputEl.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' || e.keyCode === 13) {
+      e.preventDefault();
+      triggerVerification();
+    }
+  });
+
+  // 2. Enter key via keyup (backup for scanners that only emit keyup)
+  inputEl.addEventListener('keyup', function(e) {
+    if (e.key === 'Enter' || e.keyCode === 13) {
+      e.preventDefault();
+      triggerVerification();
+    }
+  });
+
+  // 3. Instant execution on PASTE! (Allows you to copy & paste to test immediately)
+  inputEl.addEventListener('paste', function(e) {
+    // Read pasted text right away
+    setTimeout(function() {
+      triggerVerification();
+    }, 20);
+  });
+
+  // 4. Manual "ENTER / VERIFY" Button Click
+  if (submitBtn) {
+    submitBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      triggerVerification();
+    });
+  }
+
+  // 5. Hardware scanner rapid stream auto-trigger (400ms pause)
+  inputEl.addEventListener('input', function() {
+    clearTimeout(debounceTimer);
+    const val = inputEl.value.trim();
+    if (!val) {
+      if (badgeEl) {
+        badgeEl.innerText = 'READY';
+        badgeEl.className = 'scan-status-pill';
+      }
+      return;
+    }
+    if (badgeEl) {
+      badgeEl.innerText = 'TYPING...';
+      badgeEl.className = 'scan-status-pill scanning';
+    }
+
+    debounceTimer = setTimeout(function() {
+      if (inputEl.value.trim().length >= 8) {
+        triggerVerification();
+      }
+    }, 400);
+  });
+
+  // Sound toggle
+  if (soundBtn) {
+    soundBtn.addEventListener('click', function() {
+      soundEnabled = !soundEnabled;
+      soundBtn.innerText = soundEnabled ? 'AUDIO: ON' : 'AUDIO: MUTED';
+      inputEl.focus();
+    });
+  }
+
+  // Log drawer
+  if (historyBtn && logDrawer) {
+    historyBtn.addEventListener('click', function() {
+      logDrawer.classList.toggle('open');
+    });
+  }
+  if (closeDrawerBtn && logDrawer) {
+    closeDrawerBtn.addEventListener('click', function() {
+      logDrawer.classList.remove('open');
+      inputEl.focus();
+    });
+  }
+  if (clearLogBtn) {
+    clearLogBtn.addEventListener('click', function() {
       scanHistory = [];
-      statCount.innerText = '0';
+      if (statCount) statCount.innerText = '0';
       renderLog();
+    });
+  }
+  if (exportCsvBtn) {
+    exportCsvBtn.addEventListener('click', function() {
+      if (!scanHistory.length) return alert('No scans to export.');
+      const csv = 'Time,Barcode,Destination,Service,Status\n' + scanHistory.map(s => `"${s.time}","${s.barcode}","${s.destination}","${s.service}","${s.status}"`).join('\n');
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `shipping-scans-${new Date().toISOString().slice(0, 10)}.csv`;
+      a.click();
+    });
+  }
+
+  // Fullscreen
+  if (fullscreenBtn) {
+    fullscreenBtn.addEventListener('click', function() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+        fullscreenBtn.innerText = 'EXIT FULLSCREEN';
+      } else {
+        document.exitFullscreen().catch(() => {});
+        fullscreenBtn.innerText = 'FULLSCREEN';
+      }
+      inputEl.focus();
+    });
+  }
+
+  // Auto-focus input
+  window.addEventListener('click', function(e) {
+    if (!['BUTTON', 'A'].includes(e.target.tagName)) {
+      inputEl.focus();
     }
   });
 
-  exportCsvBtn.addEventListener('click', () => {
-    if (!scanHistory.length) return alert('No scans to export.');
-    const csv = 'Time,Barcode,Destination,Service,Status\n' + scanHistory.map(s => `"${s.time}","${s.barcode}","${s.destination}","${s.service}","${s.status}"`).join('\n');
-    const blob = new Blob([csv], { type: 'text/csv' });
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = `shipping-scans-${new Date().toISOString().slice(0, 10)}.csv`;
-    a.click();
-  });
-
-  // Fullscreen Mode Toggle
-  fullscreenBtn.addEventListener('click', () => {
-    if (!document.fullscreenElement) {
-      document.documentElement.requestFullscreen().catch(() => {});
-      fullscreenBtn.innerText = 'EXIT FULLSCREEN';
-    } else {
-      document.exitFullscreen().catch(() => {});
-      fullscreenBtn.innerText = 'FULLSCREEN';
-    }
-    barcodeInput.focus();
-  });
-});
+  inputEl.focus();
+})();
