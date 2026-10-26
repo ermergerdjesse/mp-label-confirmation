@@ -3,146 +3,96 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Label & Barcode Scan Center</title>
+  <title>Shipping Pickup Station - Scan Verification</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;700;800;900&family=JetBrains+Mono:wght@600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css" />
 </head>
-<body>
-  <!-- Top Navigation Bar -->
-  <header class="navbar">
-    <div class="nav-container">
-      <div class="brand">
-        <svg class="brand-icon" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"></path>
-          <line x1="7" y1="12" x2="17" y2="12"></line>
-          <line x1="7" y1="8" x2="17" y2="8"></line>
-          <line x1="7" y1="16" x2="17" y2="16"></line>
-        </svg>
-        <span class="brand-title">ScanHub</span>
-        <span class="badge live-badge">LIVE SCANNER</span>
-      </div>
+<body class="theme-display">
+  <!-- Minimal Header Bar -->
+  <header class="top-bar">
+    <div class="brand">
+      <span class="pulse-indicator"></span>
+      <span class="station-name">SHIPPING PICKUP STATION</span>
+    </div>
 
-      <div class="nav-stats">
-        <div class="stat-pill">
-          <span class="stat-label">Session:</span>
-          <span class="stat-val" id="statScanCount">0</span>
-        </div>
-        <div class="stat-pill">
-          <span class="stat-label">Valid:</span>
-          <span class="stat-val success-val" id="statValidCount">0</span>
-        </div>
-        <div class="stat-pill">
-          <span class="stat-label">Errors:</span>
-          <span class="stat-val danger-val" id="statErrorCount">0</span>
-        </div>
-      </div>
+    <!-- Active Input Bar (Keeps 100% focus) -->
+    <div class="scan-bar-container">
+      <input 
+        type="text" 
+        id="barcodeInput" 
+        placeholder="Scan label..." 
+        autocomplete="off" 
+        autofocus 
+        spellcheck="false"
+      />
+      <span class="scan-status-pill" id="timerBadge">READY</span>
+    </div>
+
+    <div class="top-controls">
+      <button id="soundToggleBtn" class="pill-btn" title="Toggle audio alert">🔊 SOUND ON</button>
+      <button id="historyToggleBtn" class="pill-btn" title="Toggle scan log drawer">📋 LOG (<span id="statCount">0</span>)</button>
+      <button id="fullscreenBtn" class="pill-btn" title="Toggle Fullscreen">⛶ FULLSCREEN</button>
     </div>
   </header>
 
-  <!-- Main Container -->
-  <main class="app-layout">
-    <!-- Left Column: Scanner Station & Huge Verification Display -->
-    <section class="scan-station">
-      <div class="card scan-input-card">
-        <div class="card-header">
-          <div>
-            <h2>Scan Input Station</h2>
-            <p class="text-muted">Auto-triggers 1 second after typing stops or on scanner Enter.</p>
-          </div>
-          <div class="station-actions">
-            <button id="toggleCameraBtn" class="btn btn-secondary">
-              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
-                <circle cx="12" cy="13" r="4"></circle>
-              </svg>
-              <span>Camera Scan</span>
-            </button>
-            <button id="soundToggleBtn" class="btn btn-icon" title="Toggle Beep Audio">
-              🔊
-            </button>
-          </div>
-        </div>
-
-        <!-- Camera Scanner Area (Hidden by default) -->
-        <div id="cameraContainer" class="camera-panel" style="display: none;">
-          <video id="videoPreview" playsinline></video>
-          <div class="camera-target-box">
-            <div class="scan-laser"></div>
-          </div>
-          <div class="camera-footer">
-            <span>Align barcode within red line</span>
-            <button id="closeCameraBtn" class="btn btn-sm btn-secondary">Stop Camera</button>
-          </div>
-        </div>
-
-        <!-- Scan Input Form -->
-        <form id="scanForm" class="scan-form" onsubmit="return false;">
-          <div class="input-glow-wrapper">
-            <input 
-              type="text" 
-              id="barcodeInput" 
-              placeholder="Waiting for scan... (Auto-focused)" 
-              autocomplete="off" 
-              autofocus 
-              spellcheck="false"
-            />
-            <button type="submit" id="manualSubmitBtn" class="btn btn-primary">Scan</button>
-          </div>
-          <div class="input-hint">
-            <span class="timer-hint" id="timerHint">⚡ Ready. Auto-submits 1.0s after final character</span>
-          </div>
-        </form>
-
-        <!-- GIANT HERO VERIFICATION DISPLAY -->
-        <div id="scanFeedback" class="hero-feedback idle">
-          <div class="hero-icon-wrap" id="feedbackIconWrap">
-            <span id="feedbackIcon">READY</span>
-          </div>
-          <div class="hero-body">
-            <div class="hero-title" id="feedbackTitle">READY TO SCAN</div>
-            <div class="hero-barcode" id="feedbackBarcode">—</div>
-            <div class="hero-subtitle" id="feedbackDetail">Scan barcode or label to verify</div>
-          </div>
-        </div>
+  <!-- HUGE BILLBOARD MONITOR DISPLAY -->
+  <main class="billboard-container" id="billboardScreen">
+    <div class="display-card idle" id="displayCard">
+      <!-- 1. Top Status Badge -->
+      <div class="sign-status" id="signStatus">
+        <span class="status-icon" id="statusIcon">⚡</span>
+        <span class="status-text" id="statusText">READY TO SCAN</span>
       </div>
-    </section>
 
-    <!-- Right Column: Scan History & Audit Logs -->
-    <section class="history-section">
-      <div class="card history-card">
-        <div class="card-header">
-          <div>
-            <h3>Activity Log</h3>
-            <span class="text-muted text-sm">Real-time log</span>
-          </div>
-          <div class="history-actions">
-            <button id="exportCsvBtn" class="btn btn-secondary btn-sm">Export CSV</button>
-            <button id="clearLogBtn" class="btn btn-danger btn-sm">Clear</button>
-          </div>
-        </div>
-
-        <div class="table-container">
-          <table class="scan-table" id="scanTable">
-            <thead>
-              <tr>
-                <th>Time</th>
-                <th>Barcode</th>
-                <th>Carrier / Type</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody id="scanLogBody">
-              <!-- Populated via app.js -->
-            </tbody>
-          </table>
-        </div>
+      <!-- 2. Sub-header (SCANNED & VERIFIED) -->
+      <div class="sign-subheading" id="signSubheading">
+        AWAITING PACKAGE LABEL
       </div>
-    </section>
+
+      <!-- 3. GIGANTIC PICKUP ROUTING LOCATION / CARRIER -->
+      <div class="sign-destination" id="signDestination">
+        SCAN BARCODE
+      </div>
+
+      <!-- Optional secondary lane / note (e.g. "or FedEx Ground") -->
+      <div class="sign-subdest" id="signSubdest"></div>
+
+      <!-- 4. Barcode number (Monospace, clear) -->
+      <div class="sign-barcode" id="signBarcode">
+        READY FOR SCANNER
+      </div>
+    </div>
   </main>
 
-  <script src="https://cdn.jsdelivr.net/npm/@zxing/library@latest/umd/index.min.js"></script>
+  <!-- Drawer for Scan Log & Review (Slide-in) -->
+  <aside class="log-drawer" id="logDrawer">
+    <div class="drawer-header">
+      <h3>Scan History Log</h3>
+      <div class="drawer-btns">
+        <button id="exportCsvBtn" class="pill-btn sm">Export CSV</button>
+        <button id="clearLogBtn" class="pill-btn sm danger">Clear</button>
+        <button id="closeDrawerBtn" class="pill-btn sm">✕</button>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table class="history-table">
+        <thead>
+          <tr>
+            <th>Time</th>
+            <th>Barcode</th>
+            <th>Pickup Destination / Carrier</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="scanHistoryBody">
+          <!-- Log lines rendered here -->
+        </tbody>
+      </table>
+    </div>
+  </aside>
+
   <script src="app.js"></script>
 </body>
 </html>
