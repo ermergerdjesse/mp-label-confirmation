@@ -170,15 +170,15 @@ html, body {
 
 .display-card {
   width: 100%;
-  max-width: 1300px;
-  height: 88%;
+  max-width: 1360px;
+  height: 90%;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   text-align: center;
   border-radius: 20px;
-  padding: 30px 40px;
+  padding: 24px 30px;
   transition: all 0.15s ease-in-out;
   border: 4px solid var(--border-subtle);
   background: #090d14;
@@ -195,19 +195,21 @@ html, body {
   border-color: #232a36;
 }
 
-.display-card.idle .sign-subheading {
-  color: #4f5f74;
-}
-
 .display-card.idle .sign-destination {
   color: #92a4bc;
+}
+
+.display-card.idle .sign-subdest {
+  color: #4f5f74;
 }
 
 .display-card.idle .sign-barcode {
   color: #4f5f74;
 }
 
-/* VERIFIED STATE */
+/* =========================================
+   VERIFIED STATE (MAXIMIZED CARRIER SIZE)
+   ========================================= */
 .display-card.success {
   background: radial-gradient(circle at center, #071f11 0%, #020905 100%);
   border: 5px solid var(--neon-green);
@@ -218,64 +220,56 @@ html, body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 8px;
+  margin-bottom: 12px;
 }
 
 .status-badge-text {
-  font-size: clamp(38px, 5.5vw, 76px);
+  font-size: clamp(34px, 4.5vw, 68px);
   font-weight: 900;
-  letter-spacing: 3px;
+  letter-spacing: 4px;
   color: var(--neon-green);
   text-transform: uppercase;
   line-height: 1;
   text-shadow: 0 0 25px var(--green-glow);
-  padding: 4px 28px;
-  border-radius: 8px;
-  border: 2px solid rgba(0, 255, 76, 0.4);
+  padding: 6px 36px;
+  border-radius: 10px;
+  border: 2px solid rgba(0, 255, 76, 0.5);
+  background-color: rgba(0, 255, 76, 0.08);
 }
 
-.sign-subheading {
-  font-size: clamp(26px, 3.8vw, 54px);
-  font-weight: 900;
-  letter-spacing: 1.5px;
-  color: #ffffff;
-  text-transform: uppercase;
-  margin-top: 14px;
-  margin-bottom: 8px;
-  line-height: 1.1;
-}
-
+/* GIGANTIC CARRIER PICKUP DESTINATION (LARGEST ELEMENT ON SCREEN) */
 .sign-destination {
-  font-size: clamp(48px, 7.8vw, 114px);
+  font-size: clamp(64px, 12vw, 168px);
   font-weight: 900;
-  letter-spacing: -1px;
+  letter-spacing: -2px;
   color: #ffffff;
-  line-height: 1.05;
-  margin-top: 4px;
+  line-height: 1.0;
+  margin: 12px 0 6px 0;
   text-transform: none;
-  max-width: 95%;
+  max-width: 98%;
   word-wrap: break-word;
-  text-shadow: 0 4px 18px rgba(0, 0, 0, 0.9);
+  text-shadow: 0 4px 25px rgba(0, 0, 0, 0.95);
 }
 
 .sign-subdest {
-  font-size: clamp(22px, 3vw, 42px);
+  font-size: clamp(26px, 3.8vw, 56px);
   font-weight: 700;
   color: #a0aec0;
   line-height: 1.2;
-  margin-top: 6px;
+  margin-bottom: 14px;
 }
 
+/* BOTTOM BARCODE NUMBER */
 .sign-barcode {
   font-family: var(--font-mono);
-  font-size: clamp(20px, 2.5vw, 38px);
+  font-size: clamp(22px, 3vw, 42px);
   font-weight: 800;
   color: #e2e8f0;
   letter-spacing: 2px;
-  margin-top: 24px;
-  padding: 6px 24px;
+  margin-top: 10px;
+  padding: 6px 28px;
   border-radius: 8px;
-  background-color: rgba(0, 0, 0, 0.6);
+  background-color: rgba(0, 0, 0, 0.65);
   border: 1px solid rgba(255, 255, 255, 0.15);
   max-width: 95%;
   word-break: break-all;
@@ -291,16 +285,17 @@ html, body {
 .display-card.danger .status-badge-text {
   color: var(--neon-red);
   border-color: rgba(255, 51, 68, 0.4);
+  background-color: rgba(255, 51, 68, 0.08);
   text-shadow: 0 0 25px var(--red-glow);
-}
-
-.display-card.danger .sign-subheading {
-  color: #ffd2d5;
 }
 
 .display-card.danger .sign-destination {
   color: var(--neon-red);
-  text-shadow: 0 0 20px var(--red-glow);
+  text-shadow: 0 0 25px var(--red-glow);
+}
+
+.display-card.danger .sign-subdest {
+  color: #ffd2d5;
 }
 
 .display-card.danger .sign-barcode {

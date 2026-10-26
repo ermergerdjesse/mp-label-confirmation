@@ -1,376 +1,93 @@
-/* Industrial High-Visibility Shipping Terminal Display */
-:root {
-  --bg-black: #000000;
-  --bg-dark: #0a0e14;
-  --card-dark: #0f141c;
-  --border-subtle: #1f2733;
-  --neon-green: #00ff4c;
-  --green-glow: rgba(0, 255, 76, 0.45);
-  --neon-red: #ff3344;
-  --red-glow: rgba(255, 51, 68, 0.45);
-  --text-white: #ffffff;
-  --text-dim: #7f8a9a;
-  --font-display: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  --font-mono: 'JetBrains Mono', monospace;
-}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Shipping Pickup Station - Scan Verification</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;700;800;900&family=JetBrains+Mono:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="theme-display">
+  <!-- Minimal Top Header Bar -->
+  <header class="top-bar">
+    <div class="brand">
+      <span class="pulse-indicator"></span>
+      <span class="station-name">SHIPPING PICKUP STATION</span>
+    </div>
 
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
+    <!-- Scanner Capture Box -->
+    <div class="scan-bar-container">
+      <input 
+        type="text" 
+        id="barcodeInput" 
+        placeholder="Scan or paste barcode..." 
+        autocomplete="off" 
+        autofocus 
+        spellcheck="false"
+      />
+      <button type="button" id="submitScanBtn" class="pill-btn scan-go-btn">ENTER / VERIFY</button>
+      <span class="scan-status-pill" id="scannerStatusBadge">READY</span>
+    </div>
 
-html, body {
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-  background-color: var(--bg-black);
-  color: var(--text-white);
-  font-family: var(--font-display);
-}
+    <div class="top-controls">
+      <button id="soundToggleBtn" type="button" class="pill-btn" title="Toggle audio tone">AUDIO: ON</button>
+      <button id="historyToggleBtn" type="button" class="pill-btn" title="Toggle scan log drawer">LOG (<span id="statCount">0</span>)</button>
+      <button id="fullscreenBtn" type="button" class="pill-btn" title="Toggle Fullscreen">FULLSCREEN</button>
+    </div>
+  </header>
 
-/* Header */
-.top-bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px 24px;
-  background-color: var(--bg-dark);
-  border-bottom: 2px solid var(--border-subtle);
-  height: 64px;
-}
+  <!-- GIGANTIC BILLBOARD SCREEN -->
+  <main class="billboard-container" id="billboardScreen">
+    <div class="display-card idle" id="displayCard">
+      <!-- Top Status Badge -->
+      <div class="sign-status" id="signStatus">
+        <span class="status-badge-text" id="statusBadgeText">READY</span>
+      </div>
 
-.brand {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
+      <!-- Giant Carrier Pickup Destination (Maximized font size) -->
+      <div class="sign-destination" id="signDestination">
+        SCAN BARCODE
+      </div>
 
-.pulse-indicator {
-  width: 10px;
-  height: 10px;
-  background-color: var(--neon-green);
-  border-radius: 50%;
-  box-shadow: 0 0 10px var(--neon-green);
-  animation: pulse 1.5s infinite;
-}
+      <!-- Specific Service Sub-line -->
+      <div class="sign-subdest" id="signSubdest">Awaiting package scan</div>
 
-@keyframes pulse {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.4; transform: scale(0.85); }
-}
+      <!-- High-contrast Monospace Barcode Number -->
+      <div class="sign-barcode" id="signBarcode">
+        READY
+      </div>
+    </div>
+  </main>
 
-.station-name {
-  font-weight: 800;
-  font-size: 13px;
-  letter-spacing: 1.5px;
-  color: var(--text-dim);
-}
+  <!-- Slide-in Audit Log Drawer -->
+  <aside class="log-drawer" id="logDrawer">
+    <div class="drawer-header">
+      <h3>Scan History Log</h3>
+      <div class="drawer-btns">
+        <button id="exportCsvBtn" type="button" class="pill-btn sm">EXPORT CSV</button>
+        <button id="clearLogBtn" type="button" class="pill-btn sm danger">CLEAR</button>
+        <button id="closeDrawerBtn" type="button" class="pill-btn sm">CLOSE</button>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table class="history-table">
+        <thead>
+          <tr>
+            <th>Time</th>
+            <th>Barcode</th>
+            <th>Carrier / Destination</th>
+            <th>Service Type</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="scanHistoryBody">
+        </tbody>
+      </table>
+    </div>
+  </aside>
 
-/* Scanner Input Field & Form */
-.scan-bar-container {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: #141a24;
-  border: 1px solid #2d3848;
-  padding: 4px 8px 4px 12px;
-  border-radius: 8px;
-  width: 480px;
-}
-
-.scan-bar-container input {
-  background: transparent;
-  border: none;
-  outline: none;
-  color: #fff;
-  font-family: var(--font-mono);
-  font-size: 15px;
-  font-weight: 600;
-  flex: 1;
-  min-width: 0;
-}
-
-.scan-go-btn {
-  background: #1f6feb !important;
-  color: #fff !important;
-  border-color: #388bfd !important;
-  padding: 6px 14px !important;
-  font-size: 11px !important;
-  letter-spacing: 0.5px;
-  cursor: pointer;
-}
-
-.scan-go-btn:hover {
-  background: #388bfd !important;
-}
-
-.scan-status-pill {
-  font-size: 11px;
-  font-weight: 700;
-  font-family: var(--font-mono);
-  padding: 4px 8px;
-  border-radius: 4px;
-  background: #232c3a;
-  color: var(--text-dim);
-  white-space: nowrap;
-}
-
-.scan-status-pill.scanning {
-  background: #00ff4c;
-  color: #000;
-  font-weight: 800;
-}
-
-/* Control Buttons */
-.top-controls {
-  display: flex;
-  gap: 10px;
-}
-
-.pill-btn {
-  background: #161c26;
-  border: 1px solid #2d3848;
-  color: #cbd5e1;
-  font-weight: 700;
-  font-size: 12px;
-  padding: 6px 14px;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.15s;
-}
-
-.pill-btn:hover {
-  background: #242e3f;
-  color: #fff;
-  border-color: #4b5a70;
-}
-
-.pill-btn.sm {
-  padding: 4px 10px;
-  font-size: 11px;
-}
-
-.pill-btn.danger:hover {
-  background: var(--neon-red);
-  color: #fff;
-  border-color: var(--neon-red);
-}
-
-/* Billboard Screen */
-.billboard-container {
-  width: 100%;
-  height: calc(100vh - 64px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 24px;
-  background-color: #030508;
-}
-
-.display-card {
-  width: 100%;
-  max-width: 1360px;
-  height: 90%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  border-radius: 20px;
-  padding: 24px 30px;
-  transition: all 0.15s ease-in-out;
-  border: 4px solid var(--border-subtle);
-  background: #090d14;
-}
-
-/* Idle State */
-.display-card.idle {
-  border-color: #232a36;
-  background: #090d14;
-}
-
-.display-card.idle .status-badge-text {
-  color: #8da2be;
-  border-color: #232a36;
-}
-
-.display-card.idle .sign-destination {
-  color: #92a4bc;
-}
-
-.display-card.idle .sign-subdest {
-  color: #4f5f74;
-}
-
-.display-card.idle .sign-barcode {
-  color: #4f5f74;
-}
-
-/* =========================================
-   VERIFIED STATE (MAXIMIZED CARRIER SIZE)
-   ========================================= */
-.display-card.success {
-  background: radial-gradient(circle at center, #071f11 0%, #020905 100%);
-  border: 5px solid var(--neon-green);
-  box-shadow: 0 0 60px rgba(0, 255, 76, 0.3), inset 0 0 40px rgba(0, 255, 76, 0.15);
-}
-
-.sign-status {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 12px;
-}
-
-.status-badge-text {
-  font-size: clamp(34px, 4.5vw, 68px);
-  font-weight: 900;
-  letter-spacing: 4px;
-  color: var(--neon-green);
-  text-transform: uppercase;
-  line-height: 1;
-  text-shadow: 0 0 25px var(--green-glow);
-  padding: 6px 36px;
-  border-radius: 10px;
-  border: 2px solid rgba(0, 255, 76, 0.5);
-  background-color: rgba(0, 255, 76, 0.08);
-}
-
-/* GIGANTIC CARRIER PICKUP DESTINATION (LARGEST ELEMENT ON SCREEN) */
-.sign-destination {
-  font-size: clamp(64px, 12vw, 168px);
-  font-weight: 900;
-  letter-spacing: -2px;
-  color: #ffffff;
-  line-height: 1.0;
-  margin: 12px 0 6px 0;
-  text-transform: none;
-  max-width: 98%;
-  word-wrap: break-word;
-  text-shadow: 0 4px 25px rgba(0, 0, 0, 0.95);
-}
-
-.sign-subdest {
-  font-size: clamp(26px, 3.8vw, 56px);
-  font-weight: 700;
-  color: #a0aec0;
-  line-height: 1.2;
-  margin-bottom: 14px;
-}
-
-/* BOTTOM BARCODE NUMBER */
-.sign-barcode {
-  font-family: var(--font-mono);
-  font-size: clamp(22px, 3vw, 42px);
-  font-weight: 800;
-  color: #e2e8f0;
-  letter-spacing: 2px;
-  margin-top: 10px;
-  padding: 6px 28px;
-  border-radius: 8px;
-  background-color: rgba(0, 0, 0, 0.65);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  max-width: 95%;
-  word-break: break-all;
-}
-
-/* FAILED STATE */
-.display-card.danger {
-  background: radial-gradient(circle at center, #250709 0%, #0d0102 100%);
-  border: 5px solid var(--neon-red);
-  box-shadow: 0 0 60px rgba(255, 51, 68, 0.35), inset 0 0 40px rgba(255, 51, 68, 0.15);
-}
-
-.display-card.danger .status-badge-text {
-  color: var(--neon-red);
-  border-color: rgba(255, 51, 68, 0.4);
-  background-color: rgba(255, 51, 68, 0.08);
-  text-shadow: 0 0 25px var(--red-glow);
-}
-
-.display-card.danger .sign-destination {
-  color: var(--neon-red);
-  text-shadow: 0 0 25px var(--red-glow);
-}
-
-.display-card.danger .sign-subdest {
-  color: #ffd2d5;
-}
-
-.display-card.danger .sign-barcode {
-  color: #ff999f;
-  border-color: rgba(255, 51, 68, 0.3);
-}
-
-/* Drawer / Log Modal */
-.log-drawer {
-  position: fixed;
-  top: 64px;
-  right: -560px;
-  width: 540px;
-  height: calc(100vh - 64px);
-  background-color: #0b0f17;
-  border-left: 2px solid #232c3d;
-  box-shadow: -10px 0 30px rgba(0, 0, 0, 0.7);
-  transition: right 0.25s ease;
-  z-index: 200;
-  display: flex;
-  flex-direction: column;
-}
-
-.log-drawer.open {
-  right: 0;
-}
-
-.drawer-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 16px;
-  border-bottom: 1px solid #1f2736;
-}
-
-.drawer-header h3 {
-  font-size: 15px;
-  font-weight: 700;
-}
-
-.drawer-btns {
-  display: flex;
-  gap: 8px;
-}
-
-.table-wrap {
-  flex-grow: 1;
-  overflow-y: auto;
-  padding: 12px;
-}
-
-.history-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 13px;
-}
-
-.history-table th, .history-table td {
-  padding: 10px 8px;
-  border-bottom: 1px solid #1a2230;
-  text-align: left;
-}
-
-.history-table th {
-  font-size: 11px;
-  text-transform: uppercase;
-  color: var(--text-dim);
-  position: sticky;
-  top: 0;
-  background: #0b0f17;
-}
-
-.history-table td {
-  font-family: var(--font-mono);
-}
-
-.log-success { color: var(--neon-green); font-weight: 700; }
-.log-danger { color: var(--neon-red); font-weight: 700; }
+  <script src="app.js"></script>
+</body>
+</html>
