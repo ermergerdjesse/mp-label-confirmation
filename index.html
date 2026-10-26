@@ -10,70 +10,69 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body class="theme-display">
-  <!-- Minimal Header Bar -->
+  <!-- Minimal Top Header Bar (No Emojis) -->
   <header class="top-bar">
     <div class="brand">
       <span class="pulse-indicator"></span>
       <span class="station-name">SHIPPING PICKUP STATION</span>
     </div>
 
-    <!-- Active Input Bar (Keeps 100% focus) -->
+    <!-- Scanner Capture Field -->
     <div class="scan-bar-container">
       <input 
         type="text" 
         id="barcodeInput" 
-        placeholder="Scan label..." 
+        placeholder="Ready for barcode scan..." 
         autocomplete="off" 
         autofocus 
         spellcheck="false"
       />
-      <span class="scan-status-pill" id="timerBadge">READY</span>
+      <span class="scan-status-pill" id="scannerStatusBadge">READY</span>
     </div>
 
     <div class="top-controls">
-      <button id="soundToggleBtn" class="pill-btn" title="Toggle audio alert">🔊 SOUND ON</button>
-      <button id="historyToggleBtn" class="pill-btn" title="Toggle scan log drawer">📋 LOG (<span id="statCount">0</span>)</button>
-      <button id="fullscreenBtn" class="pill-btn" title="Toggle Fullscreen">⛶ FULLSCREEN</button>
+      <button id="soundToggleBtn" class="pill-btn" title="Toggle audio tone">AUDIO: ON</button>
+      <button id="historyToggleBtn" class="pill-btn" title="Toggle scan log drawer">LOG (<span id="statCount">0</span>)</button>
+      <button id="fullscreenBtn" class="pill-btn" title="Toggle Fullscreen">FULLSCREEN</button>
     </div>
   </header>
 
-  <!-- HUGE BILLBOARD MONITOR DISPLAY -->
+  <!-- GIGANTIC BILLBOARD SCREEN -->
   <main class="billboard-container" id="billboardScreen">
     <div class="display-card idle" id="displayCard">
-      <!-- 1. Top Status Badge -->
+      <!-- Top Status Badge -->
       <div class="sign-status" id="signStatus">
-        <span class="status-icon" id="statusIcon">⚡</span>
-        <span class="status-text" id="statusText">READY TO SCAN</span>
+        <span class="status-badge-text" id="statusBadgeText">READY</span>
       </div>
 
-      <!-- 2. Sub-header (SCANNED & VERIFIED) -->
+      <!-- Verification Subheading -->
       <div class="sign-subheading" id="signSubheading">
-        AWAITING PACKAGE LABEL
+        AWAITING PACKAGE SCAN
       </div>
 
-      <!-- 3. GIGANTIC PICKUP ROUTING LOCATION / CARRIER -->
+      <!-- Giant Carrier Pickup Destination -->
       <div class="sign-destination" id="signDestination">
         SCAN BARCODE
       </div>
 
-      <!-- Optional secondary lane / note (e.g. "or FedEx Ground") -->
+      <!-- Specific Service Sub-line (e.g. Ground / Priority / Express) -->
       <div class="sign-subdest" id="signSubdest"></div>
 
-      <!-- 4. Barcode number (Monospace, clear) -->
+      <!-- High-contrast Monospace Barcode Number -->
       <div class="sign-barcode" id="signBarcode">
-        READY FOR SCANNER
+        READY
       </div>
     </div>
   </main>
 
-  <!-- Drawer for Scan Log & Review (Slide-in) -->
+  <!-- Slide-in Audit Log Drawer -->
   <aside class="log-drawer" id="logDrawer">
     <div class="drawer-header">
       <h3>Scan History Log</h3>
       <div class="drawer-btns">
-        <button id="exportCsvBtn" class="pill-btn sm">Export CSV</button>
-        <button id="clearLogBtn" class="pill-btn sm danger">Clear</button>
-        <button id="closeDrawerBtn" class="pill-btn sm">✕</button>
+        <button id="exportCsvBtn" class="pill-btn sm">EXPORT CSV</button>
+        <button id="clearLogBtn" class="pill-btn sm danger">CLEAR</button>
+        <button id="closeDrawerBtn" class="pill-btn sm">CLOSE</button>
       </div>
     </div>
     <div class="table-wrap">
@@ -82,12 +81,13 @@
           <tr>
             <th>Time</th>
             <th>Barcode</th>
-            <th>Pickup Destination / Carrier</th>
+            <th>Carrier / Destination</th>
+            <th>Service Type</th>
             <th>Status</th>
           </tr>
         </thead>
         <tbody id="scanHistoryBody">
-          <!-- Log lines rendered here -->
+          <!-- Dynamically populated via app.js -->
         </tbody>
       </table>
     </div>
