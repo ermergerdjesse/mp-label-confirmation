@@ -4,13 +4,12 @@ document.addEventListener('DOMContentLoaded', () => {
   let scanHistory = [];
   let soundEnabled = true;
   
-  // Barcode scanner character stream timer
-  // Hardware barcode guns stream characters every 5ms-25ms.
-  // When 65ms passes without a new character, the barcode transmission is complete.
-  let streamCompletionTimer = null;
-  const SCANNER_IDLE_BURST_MS = 65;
+  // Timer for automatic scan detection
+  let completionTimer = null;
+  const COMPLETION_DELAY_MS = 250;
 
   // DOM Elements
+  const scanForm = document.getElementById('scanForm');
   const barcodeInput = document.getElementById('barcodeInput');
   const scannerStatusBadge = document.getElementById('scannerStatusBadge');
   const displayCard = document.getElementById('displayCard');
@@ -41,9 +40,9 @@ document.addEventListener('DOMContentLoaded', () => {
       console.warn('labels.json not loaded; carrier heuristic routing active.');
     });
 
-  // Keep focus on input at all times for hardware scanners
-  function keepInputFocused() {
-    if (document.activeElement !== barcodeInput) {
+  // Keep input focused automatically
+  function forceFocus() {
+    if (document.activeElement !== barcodeInput && !logDrawer.classList.contains('open')) {
       barcodeInput.focus();
     }
   }
@@ -54,29 +53,42 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  setInterval(keepInputFocused, 1500);
+  setInterval(forceFocus, 1000);
 
-  // Web Audio Tone Generator (No external MP3 files needed)
-  const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  // Web Audio Tone Synthesizer
+  let audioCtx = null;
+  function getAudioContext() {
+    if (!audioCtx) {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    if (audioCtx.state === 'suspended') {
+      audioCtx.resume();
+    }
+    return audioCtx;
+  }
+
   function playTone(isSuccess = true) {
     if (!soundEnabled) return;
     try {
-      const osc = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
+      const ctx = getAudioContext();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
       osc.connect(gain);
-      gain.connect(audioCtx.destination);
+      gain.connect(ctx.destination);
       if (isSuccess) {
-        osc.frequency.setValueAtTime(940, audioCtx.currentTime); // High crisp confirm tone
-        gain.gain.setValueAtTime(0.25, audioCtx.currentTime);
+        osc.frequency.setValueAtTime(940, ctx.currentTime);
+        gain.gain.setValueAtTime(0.25, ctx.currentTime);
         osc.start();
-        osc.stop(audioCtx.currentTime + 0.10);
+        osc.stop(ctx.currentTime + 0.12);
       } else {
-        osc.frequency.setValueAtTime(200, audioCtx.currentTime); // Low warning buzz
-        gain.gain.setValueAtTime(0.35, audioCtx.currentTime);
+        osc.frequency.setValueAtTime(220, ctx.currentTime);
+        gain.gain.setValueAtTime(0.35, ctx.currentTime);
         osc.start();
-        osc.stop(audioCtx.currentTime + 0.35);
+        osc.stop(ctx.currentTime + 0.35);
       }
-    } catch(e) {}
+    } catch(e) {
+      console.warn('Audio tone could not play', e);
+    }
   }
 
   soundToggleBtn.addEventListener('click', () => {
@@ -85,10 +97,25 @@ document.addEventListener('DOMContentLoaded', () => {
     barcodeInput.focus();
   });
 
-  // BARCODE STREAM BURST DETECTION
-  // Triggers as soon as the scanner finishes transmitting text
+  // Form Submit Handler
+  scanForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    clearTimeout(completionTimer);
+    executeCurrentScan();
+  });
+
+  // Direct Enter Keypress Trap
+  barcodeInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.keyCode === 13) {
+      e.preventDefault();
+      clearTimeout(completionTimer);
+      executeCurrentScan();
+    }
+  });
+
+  // Automatic input stream debounce
   barcodeInput.addEventListener('input', () => {
-    clearTimeout(streamCompletionTimer);
+    clearTimeout(completionTimer);
     const val = barcodeInput.value.trim();
 
     if (val.length === 0) {
@@ -100,31 +127,27 @@ document.addEventListener('DOMContentLoaded', () => {
     scannerStatusBadge.innerText = 'READING...';
     scannerStatusBadge.className = 'scan-status-pill scanning';
 
-    // Once text stops typing for 65ms, the barcode scan stream has finished
-    streamCompletionTimer = setTimeout(() => {
-      if (barcodeInput.value.trim().length > 0) {
-        processScan(barcodeInput.value);
-      }
-    }, SCANNER_IDLE_BURST_MS);
+    completionTimer = setTimeout(() => {
+      executeCurrentScan();
+    }, COMPLETION_DELAY_MS);
   });
 
-  // Immediate Enter key support (standard for barcode guns configured with CRLF)
-  barcodeInput.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      clearTimeout(streamCompletionTimer);
-      processScan(barcodeInput.value);
-    }
-  });
+  function executeCurrentScan() {
+    clearTimeout(completionTimer);
+    const raw = barcodeInput.value;
+    processScan(raw);
+  }
 
   // Main Scan Processing & Carrier Verification
   function processScan(rawCode) {
-    clearTimeout(streamCompletionTimer);
-    scannerStatusBadge.innerText = 'READY';
-    scannerStatusBadge.className = 'scan-status-pill';
+    const code = (rawCode || '').trim();
+    if (!code) {
+      scannerStatusBadge.innerText = 'READY';
+      scannerStatusBadge.className = 'scan-status-pill';
+      return;
+    }
 
-    const code = rawCode.trim();
-    if (!code) return;
+    scannerStatusBadge.innerText = 'PROCESSING...';
 
     const timestamp = new Date().toLocaleTimeString();
     const routeInfo = parseCarrierRoute(code);
@@ -163,15 +186,23 @@ document.addEventListener('DOMContentLoaded', () => {
     statCount.innerText = scanHistory.length;
     renderLog();
 
-    // Reset input for next scan
+    // Reset input and refocus immediately
     barcodeInput.value = '';
+    scannerStatusBadge.innerText = 'READY';
+    scannerStatusBadge.className = 'scan-status-pill';
     barcodeInput.focus();
   }
 
-  // ACCURATE CARRIER & SERVICE DETERMINATION
-  function parseCarrierRoute(code) {
+  // ACCURATE CARRIER & SERVICE DETERMINATION (Including DHL & UPSMI)
+  function parseCarrierRoute(raw) {
+    const code = raw.replace(/[^a-zA-Z0-9]/g, '').trim();
+
     // 1. Direct database match in labels.json
-    const record = knownLabels.find(l => l.barcode.toLowerCase() === code.toLowerCase());
+    const record = knownLabels.find(l => {
+      const cleanDB = (l.barcode || '').replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+      return cleanDB === code.toLowerCase();
+    });
+
     if (record) {
       return {
         barcode: record.barcode,
@@ -181,11 +212,44 @@ document.addEventListener('DOMContentLoaded', () => {
       };
     }
 
-    // 2. FEDEX GROUND vs FEDEX EXPRESS SEPARATION
-    // A. FedEx Ground 96 barcode (GS1-128 22-digit or 34-digit format: 96...)
+    // 2. UPS MAIL INNOVATIONS (UPSMI)
+    // Format: 18-34 digits starting with 80, 82, or 92748 (e.g. 803364829621565082)
+    if (/^80\d{16,24}$/.test(code) || /^82\d{16,24}$/.test(code) || /^92748\d+$/.test(code)) {
+      return {
+        barcode: raw,
+        primaryLocation: 'UPSMI',
+        subNote: 'UPS Mail Innovations (Postal Delivery)',
+        verified: true
+      };
+    }
+
+    // 3. DHL ECOMMERCE / DHL PARCEL
+    // Format: GS1-128 postal routing code starting with 420[ZIP]92419... / 93419... or 420 followed by 92419
+    // DHL eCommerce Mailer ID is typically 92419 or 93419
+    if (/^420\d{5}(92419|93419|94419)\d+$/i.test(code) || /^(92419|93419|94419)\d{15,}$/.test(code)) {
+      return {
+        barcode: raw,
+        primaryLocation: 'DHL',
+        subNote: 'DHL eCommerce Pickup',
+        verified: true
+      };
+    }
+
+    // Standard DHL Express format (10 digits)
+    if (/^\d{10}$/.test(code)) {
+      return {
+        barcode: raw,
+        primaryLocation: 'DHL Express',
+        subNote: 'DHL Express Airway Bill',
+        verified: true
+      };
+    }
+
+    // 4. FEDEX GROUND vs FEDEX EXPRESS
+    // A. FedEx Ground 96 GS1 barcode (20+ digits starting with 96)
     if (/^96\d{20,}/.test(code)) {
       return {
-        barcode: code,
+        barcode: raw,
         primaryLocation: 'FedEx Ground',
         subNote: 'Package Barcode (96 GS1)',
         verified: true
@@ -195,7 +259,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // B. FedEx Ground Barcode (Standard 15 digits or 20 digits starting with 00, 02, 04, 15)
     if (/^\d{15}$/.test(code) || /^00\d{18}$/.test(code)) {
       return {
-        barcode: code,
+        barcode: raw,
         primaryLocation: 'FedEx Ground',
         subNote: 'Ground Commercial / Home Delivery',
         verified: true
@@ -203,20 +267,19 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // C. FedEx Express Barcode (Standard 12 digits: e.g. 879136980972)
-    // 12-digit numeric barcodes are standard FedEx Express Form 0430/0400 airbills
     if (/^\d{12}$/.test(code)) {
       return {
-        barcode: code,
+        barcode: raw,
         primaryLocation: 'FedEx Express',
         subNote: 'Express Air Priority / Standard',
         verified: true
       };
     }
 
-    // 3. UPS GROUND & EXPRESS (1Z...)
+    // 5. UPS STANDARD & AIR (1Z...)
     if (/^1Z[0-9A-Z]{16}$/i.test(code)) {
       const serviceCode = code.substring(8, 10).toUpperCase();
-      let upsService = 'UPS Ground';
+      let upsService = 'Ground Commercial Pickup';
       let upsLocation = 'UPS Ground';
 
       if (['01', '13', '14'].includes(serviceCode)) {
@@ -225,33 +288,31 @@ document.addEventListener('DOMContentLoaded', () => {
       } else if (['02', '59'].includes(serviceCode)) {
         upsLocation = 'UPS 2nd Day Air';
         upsService = 'Air Express Pickup';
-      } else if (['03'].includes(serviceCode)) {
-        upsLocation = 'UPS Ground';
-        upsService = 'Ground Commercial Pickup';
       }
 
       return {
-        barcode: code,
+        barcode: raw,
         primaryLocation: upsLocation,
         subNote: upsService,
         verified: true
       };
     }
 
-    // 4. USPS POSTAL
+    // 6. USPS POSTAL
+    // USPS barcodes typically start with 92, 93, 94, 95 or 420[ZIP]9... (excluding DHL 92419 above)
     if (/^9[2-5]\d{20}/.test(code) || /^420\d{27}/.test(code)) {
       return {
-        barcode: code,
+        barcode: raw,
         primaryLocation: 'USPS Mail Cage',
         subNote: 'Ground Advantage / Priority',
         verified: true
       };
     }
 
-    // 5. INTERNAL PRODUCTION ORDERS
-    if (/^JOB-\d+$/i.test(code)) {
+    // 7. INTERNAL PRODUCTION ORDERS
+    if (/^JOB\d+$/i.test(code) || /^JOB-\d+$/i.test(raw)) {
       return {
-        barcode: code,
+        barcode: raw,
         primaryLocation: 'Press & Bindery Lane',
         subNote: 'Internal Production Work Order',
         verified: true
@@ -260,9 +321,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Fallback unverified
     return {
-      barcode: code,
+      barcode: raw,
       primaryLocation: 'UNREGISTERED',
-      subNote: '',
+      subNote: 'Unrecognized Barcode',
       verified: false
     };
   }
