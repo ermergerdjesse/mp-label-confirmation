@@ -1,4 +1,4 @@
-// Shipping Pickup Verification Engine - Direct Execution
+// Shipping Pickup Verification Engine - Clean & Scaled
 (function() {
   let knownLabels = [];
   let scanHistory = [];
@@ -11,7 +11,6 @@
   const badgeEl = document.getElementById('scannerStatusBadge');
   const cardEl = document.getElementById('displayCard');
   const statusBadgeText = document.getElementById('statusBadgeText');
-  const subheadingEl = document.getElementById('signSubheading');
   const destEl = document.getElementById('signDestination');
   const subdestEl = document.getElementById('signSubdest');
   const barcodeDisplayEl = document.getElementById('signBarcode');
@@ -25,7 +24,7 @@
   const exportCsvBtn = document.getElementById('exportCsvBtn');
   const fullscreenBtn = document.getElementById('fullscreenBtn');
 
-  // Load database safely
+  // Load labels.json safely
   fetch('labels.json')
     .then(r => r.json())
     .then(data => {
@@ -64,12 +63,12 @@
     } catch(e) {}
   }
 
-  // Carrier identification logic
+  // CARRIER & SERVICE DETERMINATION
   function parseCarrierRoute(raw) {
     const code = (raw || '').replace(/[^a-zA-Z0-9]/g, '').trim();
     if (!code) return null;
 
-    // 1. Direct database match
+    // 1. Direct database match in labels.json
     const record = knownLabels.find(l => {
       const dbCode = (l.barcode || '').replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
       return dbCode === code.toLowerCase();
@@ -85,6 +84,7 @@
     }
 
     // 2. UPS Mail Innovations (UPSMI)
+    // 18-24 digits starting with 80 or 82, or starting with 92748
     if (/^80\d{16,24}$/.test(code) || /^82\d{16,24}$/.test(code) || /^92748\d+$/.test(code)) {
       return {
         barcode: code,
@@ -95,6 +95,7 @@
     }
 
     // 3. DHL eCommerce / Express
+    // GS1-128 postal routing code starting with 420[ZIP]92419... / 93419...
     if (/^420\d{5}(92419|93419|94419)\d+$/i.test(code) || /^(92419|93419|94419)\d{15,}$/.test(code)) {
       return {
         barcode: code,
@@ -103,6 +104,7 @@
         verified: true
       };
     }
+    // DHL Express Airway bill (10 digits)
     if (/^\d{10}$/.test(code)) {
       return {
         barcode: code,
@@ -112,22 +114,36 @@
       };
     }
 
-    // 4. FedEx Express (Standard 12 digits, e.g. 384322828226 or 879136980972)
-    if (/^\d{12}$/.test(code)) {
-      return {
-        barcode: code,
-        destination: 'FedEx Express',
-        service: 'Express Air Priority',
-        verified: true
-      };
-    }
-
-    // 5. FedEx Ground (15 digits, 20 digits, or 96...)
+    // 4. FEDEX GROUND / SMARTPOST
+    // A. 15-digit or 20-digit barcodes
     if (/^\d{15}$/.test(code) || /^00\d{18}$/.test(code) || /^96\d{20,}/.test(code)) {
       return {
         barcode: code,
         destination: 'FedEx Ground',
         service: 'Ground Commercial / Home Delivery',
+        verified: true
+      };
+    }
+
+    // B. 12-digit FedEx Ground / SmartPost (prefixes 38..., 39..., 30..., 31...)
+    // Example: 384322836030 (FedEx Ground), 384315914220 (FedEx SmartPost)
+    if (/^(30|31|32|33|34|35|36|37|38|39)\d{10}$/.test(code)) {
+      return {
+        barcode: code,
+        destination: 'FedEx Ground',
+        service: 'Ground / SmartPost',
+        verified: true
+      };
+    }
+
+    // 5. FEDEX EXPRESS
+    // 12-digit Express tracking numbers (prefixes starting with 7, 8, 9, 4, 5, 6, 1, 2)
+    // Example: 879136980972 (FedEx 2Day / Express)
+    if (/^\d{12}$/.test(code)) {
+      return {
+        barcode: code,
+        destination: 'FedEx Express',
+        service: 'Express Priority / 2Day',
         verified: true
       };
     }
@@ -195,7 +211,6 @@
     if (result.verified) {
       cardEl.className = 'display-card success';
       statusBadgeText.innerText = 'VERIFIED';
-      subheadingEl.innerText = 'SCANNED & VERIFIED';
       destEl.innerText = result.destination;
       subdestEl.innerText = result.service;
       barcodeDisplayEl.innerText = result.barcode;
@@ -203,7 +218,6 @@
     } else {
       cardEl.className = 'display-card danger';
       statusBadgeText.innerText = 'UNKNOWN';
-      subheadingEl.innerText = 'DO NOT PLACE - NOT VERIFIED';
       destEl.innerText = 'UNRECOGNIZED BARCODE';
       subdestEl.innerText = 'Re-scan or set aside for review';
       barcodeDisplayEl.innerText = result.barcode;
@@ -245,10 +259,10 @@
   }
 
   // ==========================================
-  // EVENT LISTENERS (ROBUST & MULTI-TRIGGER)
+  // EVENT LISTENERS
   // ==========================================
 
-  // 1. Enter key via keydown
+  // Enter key via keydown
   inputEl.addEventListener('keydown', function(e) {
     if (e.key === 'Enter' || e.keyCode === 13) {
       e.preventDefault();
@@ -256,7 +270,7 @@
     }
   });
 
-  // 2. Enter key via keyup (backup for scanners that only emit keyup)
+  // Enter key via keyup
   inputEl.addEventListener('keyup', function(e) {
     if (e.key === 'Enter' || e.keyCode === 13) {
       e.preventDefault();
@@ -264,15 +278,14 @@
     }
   });
 
-  // 3. Instant execution on PASTE! (Allows you to copy & paste to test immediately)
-  inputEl.addEventListener('paste', function(e) {
-    // Read pasted text right away
+  // Instant trigger on PASTE
+  inputEl.addEventListener('paste', function() {
     setTimeout(function() {
       triggerVerification();
     }, 20);
   });
 
-  // 4. Manual "ENTER / VERIFY" Button Click
+  // Manual "ENTER / VERIFY" Button Click
   if (submitBtn) {
     submitBtn.addEventListener('click', function(e) {
       e.preventDefault();
@@ -280,7 +293,7 @@
     });
   }
 
-  // 5. Hardware scanner rapid stream auto-trigger (400ms pause)
+  // Hardware scanner rapid stream auto-trigger
   inputEl.addEventListener('input', function() {
     clearTimeout(debounceTimer);
     const val = inputEl.value.trim();
