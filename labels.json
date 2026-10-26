@@ -1,9 +1,27 @@
 [
   {
-    "barcode": "384322828226",
+    "barcode": "879136980972",
     "carrier": "FedEx",
     "destination": "FedEx Express",
-    "service": "Priority Overnight"
+    "service": "FedEx 2Day"
+  },
+  {
+    "barcode": "384322836030",
+    "carrier": "FedEx",
+    "destination": "FedEx Ground",
+    "service": "Ground Commercial"
+  },
+  {
+    "barcode": "384315914220",
+    "carrier": "FedEx",
+    "destination": "FedEx Ground",
+    "service": "FedEx SmartPost (Ground Economy)"
+  },
+  {
+    "barcode": "384322828226",
+    "carrier": "FedEx",
+    "destination": "FedEx Ground",
+    "service": "Ground Commercial"
   },
   {
     "barcode": "420945239241990416101752551488",
@@ -28,18 +46,6 @@
     "carrier": "UPSMI",
     "destination": "UPSMI",
     "service": "UPS Mail Innovations"
-  },
-  {
-    "barcode": "879136980972",
-    "carrier": "FedEx",
-    "destination": "FedEx Express",
-    "service": "Standard Overnight"
-  },
-  {
-    "barcode": "9622001900000000000000",
-    "carrier": "FedEx",
-    "destination": "FedEx Ground",
-    "service": "Ground Commercial"
   },
   {
     "barcode": "1Z9999999999999999",
