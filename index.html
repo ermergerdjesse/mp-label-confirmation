@@ -10,15 +10,15 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body class="theme-display">
-  <!-- Minimal Top Header Bar (No Emojis) -->
+  <!-- Minimal Top Header Bar -->
   <header class="top-bar">
     <div class="brand">
       <span class="pulse-indicator"></span>
       <span class="station-name">SHIPPING PICKUP STATION</span>
     </div>
 
-    <!-- Scanner Capture Field -->
-    <div class="scan-bar-container">
+    <!-- Scanner Capture Form -->
+    <form id="scanForm" class="scan-bar-container" autocomplete="off" action="javascript:void(0);">
       <input 
         type="text" 
         id="barcodeInput" 
@@ -27,13 +27,14 @@
         autofocus 
         spellcheck="false"
       />
+      <button type="submit" id="submitScanBtn" class="pill-btn scan-go-btn">SUBMIT</button>
       <span class="scan-status-pill" id="scannerStatusBadge">READY</span>
-    </div>
+    </form>
 
     <div class="top-controls">
-      <button id="soundToggleBtn" class="pill-btn" title="Toggle audio tone">AUDIO: ON</button>
-      <button id="historyToggleBtn" class="pill-btn" title="Toggle scan log drawer">LOG (<span id="statCount">0</span>)</button>
-      <button id="fullscreenBtn" class="pill-btn" title="Toggle Fullscreen">FULLSCREEN</button>
+      <button id="soundToggleBtn" type="button" class="pill-btn" title="Toggle audio tone">AUDIO: ON</button>
+      <button id="historyToggleBtn" type="button" class="pill-btn" title="Toggle scan log drawer">LOG (<span id="statCount">0</span>)</button>
+      <button id="fullscreenBtn" type="button" class="pill-btn" title="Toggle Fullscreen">FULLSCREEN</button>
     </div>
   </header>
 
@@ -55,7 +56,7 @@
         SCAN BARCODE
       </div>
 
-      <!-- Specific Service Sub-line (e.g. Ground / Priority / Express) -->
+      <!-- Specific Service Sub-line -->
       <div class="sign-subdest" id="signSubdest"></div>
 
       <!-- High-contrast Monospace Barcode Number -->
@@ -70,9 +71,9 @@
     <div class="drawer-header">
       <h3>Scan History Log</h3>
       <div class="drawer-btns">
-        <button id="exportCsvBtn" class="pill-btn sm">EXPORT CSV</button>
-        <button id="clearLogBtn" class="pill-btn sm danger">CLEAR</button>
-        <button id="closeDrawerBtn" class="pill-btn sm">CLOSE</button>
+        <button id="exportCsvBtn" type="button" class="pill-btn sm">EXPORT CSV</button>
+        <button id="clearLogBtn" type="button" class="pill-btn sm danger">CLEAR</button>
+        <button id="closeDrawerBtn" type="button" class="pill-btn sm">CLOSE</button>
       </div>
     </div>
     <div class="table-wrap">
@@ -87,7 +88,6 @@
           </tr>
         </thead>
         <tbody id="scanHistoryBody">
-          <!-- Dynamically populated via app.js -->
         </tbody>
       </table>
     </div>
