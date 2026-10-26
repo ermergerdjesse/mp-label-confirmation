@@ -1,15 +1,19 @@
-/* Industrial High-Visibility Shipping Terminal Display */
+/* Marathon Press Shipping Terminal Display */
 :root {
-  --bg-black: #000000;
-  --bg-dark: #0a0e14;
-  --card-dark: #0f141c;
-  --border-subtle: #1f2733;
-  --neon-green: #00ff4c;
-  --green-glow: rgba(0, 255, 76, 0.45);
-  --neon-red: #ff3344;
-  --red-glow: rgba(255, 51, 68, 0.45);
+  --mp-navy-deep: #070e17;
+  --mp-navy-dark: #0c1828;
+  --mp-card-bg: #102138;
+  --mp-cyan: #00c0f3;
+  --mp-cyan-glow: rgba(0, 192, 243, 0.4);
+  --mp-border: #1d3350;
+  
+  --neon-green: #00ff66;
+  --green-glow: rgba(0, 255, 102, 0.45);
+  --neon-red: #ff334b;
+  --red-glow: rgba(255, 51, 75, 0.45);
+  
   --text-white: #ffffff;
-  --text-dim: #7f8a9a;
+  --text-dim: #8fa3bf;
   --font-display: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
 }
@@ -24,20 +28,20 @@ html, body {
   width: 100%;
   height: 100%;
   overflow: hidden;
-  background-color: var(--bg-black);
+  background-color: var(--mp-navy-deep);
   color: var(--text-white);
   font-family: var(--font-display);
 }
 
-/* Header */
+/* Marathon Press Header */
 .top-bar {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 10px 24px;
-  background-color: var(--bg-dark);
-  border-bottom: 2px solid var(--border-subtle);
-  height: 64px;
+  background-color: var(--mp-navy-dark);
+  border-bottom: 2px solid var(--mp-border);
+  height: 68px;
 }
 
 .brand {
@@ -46,37 +50,52 @@ html, body {
   gap: 12px;
 }
 
-.pulse-indicator {
-  width: 10px;
-  height: 10px;
-  background-color: var(--neon-green);
-  border-radius: 50%;
-  box-shadow: 0 0 10px var(--neon-green);
-  animation: pulse 1.5s infinite;
+.brand-logo-mark {
+  background: linear-gradient(135deg, var(--mp-cyan) 0%, #0077b6 100%);
+  color: #ffffff;
+  font-weight: 900;
+  font-size: 14px;
+  letter-spacing: 0.5px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  box-shadow: 0 0 14px var(--mp-cyan-glow);
 }
 
-@keyframes pulse {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.4; transform: scale(0.85); }
+.brand-text-wrap {
+  display: flex;
+  flex-direction: column;
 }
 
 .station-name {
-  font-weight: 800;
-  font-size: 13px;
+  font-weight: 900;
+  font-size: 14px;
   letter-spacing: 1.5px;
-  color: var(--text-dim);
+  color: #ffffff;
 }
 
-/* Scanner Input Field & Form */
+.station-sub {
+  font-size: 11px;
+  color: var(--mp-cyan);
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+/* Scanner Input Field */
 .scan-bar-container {
   display: flex;
   align-items: center;
   gap: 8px;
-  background: #141a24;
-  border: 1px solid #2d3848;
+  background: #091321;
+  border: 1px solid var(--mp-border);
   padding: 4px 8px 4px 12px;
   border-radius: 8px;
   width: 480px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.scan-bar-container:focus-within {
+  border-color: var(--mp-cyan);
+  box-shadow: 0 0 12px var(--mp-cyan-glow);
 }
 
 .scan-bar-container input {
@@ -92,9 +111,10 @@ html, body {
 }
 
 .scan-go-btn {
-  background: #1f6feb !important;
-  color: #fff !important;
-  border-color: #388bfd !important;
+  background: var(--mp-cyan) !important;
+  color: #041224 !important;
+  font-weight: 800 !important;
+  border-color: var(--mp-cyan) !important;
   padding: 6px 14px !important;
   font-size: 11px !important;
   letter-spacing: 0.5px;
@@ -102,7 +122,7 @@ html, body {
 }
 
 .scan-go-btn:hover {
-  background: #388bfd !important;
+  background: #33d1ff !important;
 }
 
 .scan-status-pill {
@@ -111,14 +131,14 @@ html, body {
   font-family: var(--font-mono);
   padding: 4px 8px;
   border-radius: 4px;
-  background: #232c3a;
+  background: #14243b;
   color: var(--text-dim);
   white-space: nowrap;
 }
 
 .scan-status-pill.scanning {
-  background: #00ff4c;
-  color: #000;
+  background: var(--mp-cyan);
+  color: #041224;
   font-weight: 800;
 }
 
@@ -129,9 +149,9 @@ html, body {
 }
 
 .pill-btn {
-  background: #161c26;
-  border: 1px solid #2d3848;
-  color: #cbd5e1;
+  background: #132238;
+  border: 1px solid var(--mp-border);
+  color: #cbdcf2;
   font-weight: 700;
   font-size: 12px;
   padding: 6px 14px;
@@ -141,9 +161,9 @@ html, body {
 }
 
 .pill-btn:hover {
-  background: #242e3f;
+  background: #1d3350;
   color: #fff;
-  border-color: #4b5a70;
+  border-color: var(--mp-cyan);
 }
 
 .pill-btn.sm {
@@ -157,63 +177,63 @@ html, body {
   border-color: var(--neon-red);
 }
 
-/* Billboard Screen */
+/* Billboard Screen Container */
 .billboard-container {
   width: 100%;
-  height: calc(100vh - 64px);
+  height: calc(100vh - 68px);
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 24px;
-  background-color: #030508;
+  background-color: var(--mp-navy-deep);
 }
 
 .display-card {
   width: 100%;
-  max-width: 1360px;
+  max-width: 1380px;
   height: 90%;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   text-align: center;
-  border-radius: 20px;
+  border-radius: 24px;
   padding: 24px 30px;
   transition: all 0.15s ease-in-out;
-  border: 4px solid var(--border-subtle);
-  background: #090d14;
+  border: 4px solid var(--mp-border);
+  background: var(--mp-card-bg);
 }
 
 /* Idle State */
 .display-card.idle {
-  border-color: #232a36;
-  background: #090d14;
+  border-color: var(--mp-border);
+  background: #0d1a2d;
 }
 
 .display-card.idle .status-badge-text {
-  color: #8da2be;
-  border-color: #232a36;
+  color: var(--text-dim);
+  border-color: var(--mp-border);
 }
 
 .display-card.idle .sign-destination {
-  color: #92a4bc;
+  color: #a4bad6;
 }
 
 .display-card.idle .sign-subdest {
-  color: #4f5f74;
+  color: #5c7599;
 }
 
 .display-card.idle .sign-barcode {
-  color: #4f5f74;
+  color: #5c7599;
 }
 
 /* =========================================
-   VERIFIED STATE (MAXIMIZED CARRIER SIZE)
+   VERIFIED STATE (GIANT HIGH VISIBILITY DISPLAY)
    ========================================= */
 .display-card.success {
-  background: radial-gradient(circle at center, #071f11 0%, #020905 100%);
+  background: radial-gradient(circle at center, #052617 0%, #04140c 100%);
   border: 5px solid var(--neon-green);
-  box-shadow: 0 0 60px rgba(0, 255, 76, 0.3), inset 0 0 40px rgba(0, 255, 76, 0.15);
+  box-shadow: 0 0 65px rgba(0, 255, 102, 0.35), inset 0 0 45px rgba(0, 255, 102, 0.15);
 }
 
 .sign-status {
@@ -233,28 +253,28 @@ html, body {
   text-shadow: 0 0 25px var(--green-glow);
   padding: 6px 36px;
   border-radius: 10px;
-  border: 2px solid rgba(0, 255, 76, 0.5);
-  background-color: rgba(0, 255, 76, 0.08);
+  border: 2px solid rgba(0, 255, 102, 0.5);
+  background-color: rgba(0, 255, 102, 0.08);
 }
 
-/* GIGANTIC CARRIER PICKUP DESTINATION (LARGEST ELEMENT ON SCREEN) */
+/* GIGANTIC CARRIER PICKUP DESTINATION (FEDEX GROUND, FEDEX EXPRESS, UPS, USPS, DHL, UPSMI) */
 .sign-destination {
-  font-size: clamp(64px, 12vw, 168px);
+  font-size: clamp(68px, 13vw, 175px);
   font-weight: 900;
   letter-spacing: -2px;
   color: #ffffff;
   line-height: 1.0;
-  margin: 12px 0 6px 0;
+  margin: 10px 0 6px 0;
   text-transform: none;
   max-width: 98%;
   word-wrap: break-word;
-  text-shadow: 0 4px 25px rgba(0, 0, 0, 0.95);
+  text-shadow: 0 4px 28px rgba(0, 0, 0, 0.95);
 }
 
 .sign-subdest {
-  font-size: clamp(26px, 3.8vw, 56px);
+  font-size: clamp(24px, 3.4vw, 52px);
   font-weight: 700;
-  color: #a0aec0;
+  color: #c7d8ee;
   line-height: 1.2;
   margin-bottom: 14px;
 }
@@ -269,23 +289,23 @@ html, body {
   margin-top: 10px;
   padding: 6px 28px;
   border-radius: 8px;
-  background-color: rgba(0, 0, 0, 0.65);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  background-color: rgba(4, 12, 22, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.18);
   max-width: 95%;
   word-break: break-all;
 }
 
 /* FAILED STATE */
 .display-card.danger {
-  background: radial-gradient(circle at center, #250709 0%, #0d0102 100%);
+  background: radial-gradient(circle at center, #2e080c 0%, #140305 100%);
   border: 5px solid var(--neon-red);
-  box-shadow: 0 0 60px rgba(255, 51, 68, 0.35), inset 0 0 40px rgba(255, 51, 68, 0.15);
+  box-shadow: 0 0 65px rgba(255, 51, 75, 0.35), inset 0 0 45px rgba(255, 51, 75, 0.15);
 }
 
 .display-card.danger .status-badge-text {
   color: var(--neon-red);
-  border-color: rgba(255, 51, 68, 0.4);
-  background-color: rgba(255, 51, 68, 0.08);
+  border-color: rgba(255, 51, 75, 0.4);
+  background-color: rgba(255, 51, 75, 0.08);
   text-shadow: 0 0 25px var(--red-glow);
 }
 
@@ -300,19 +320,19 @@ html, body {
 
 .display-card.danger .sign-barcode {
   color: #ff999f;
-  border-color: rgba(255, 51, 68, 0.3);
+  border-color: rgba(255, 51, 75, 0.3);
 }
 
 /* Drawer / Log Modal */
 .log-drawer {
   position: fixed;
-  top: 64px;
+  top: 68px;
   right: -560px;
   width: 540px;
-  height: calc(100vh - 64px);
-  background-color: #0b0f17;
-  border-left: 2px solid #232c3d;
-  box-shadow: -10px 0 30px rgba(0, 0, 0, 0.7);
+  height: calc(100vh - 68px);
+  background-color: var(--mp-navy-dark);
+  border-left: 2px solid var(--mp-border);
+  box-shadow: -10px 0 35px rgba(0, 0, 0, 0.7);
   transition: right 0.25s ease;
   z-index: 200;
   display: flex;
@@ -328,12 +348,20 @@ html, body {
   justify-content: space-between;
   align-items: center;
   padding: 16px;
-  border-bottom: 1px solid #1f2736;
+  border-bottom: 1px solid var(--mp-border);
 }
 
 .drawer-header h3 {
   font-size: 15px;
-  font-weight: 700;
+  font-weight: 800;
+}
+
+.text-xs {
+  font-size: 11px;
+}
+
+.text-dim {
+  color: var(--text-dim);
 }
 
 .drawer-btns {
@@ -355,17 +383,17 @@ html, body {
 
 .history-table th, .history-table td {
   padding: 10px 8px;
-  border-bottom: 1px solid #1a2230;
+  border-bottom: 1px solid #162a45;
   text-align: left;
 }
 
 .history-table th {
   font-size: 11px;
   text-transform: uppercase;
-  color: var(--text-dim);
+  color: var(--mp-cyan);
   position: sticky;
   top: 0;
-  background: #0b0f17;
+  background: var(--mp-navy-dark);
 }
 
 .history-table td {

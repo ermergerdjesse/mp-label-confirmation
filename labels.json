@@ -3,25 +3,25 @@
     "barcode": "879136980972",
     "carrier": "FedEx",
     "destination": "FedEx Express",
-    "service": "FedEx 2Day"
+    "service": "FedEx Express"
   },
   {
     "barcode": "384322836030",
     "carrier": "FedEx",
     "destination": "FedEx Ground",
-    "service": "Ground Commercial"
+    "service": "FedEx Ground"
   },
   {
     "barcode": "384315914220",
     "carrier": "FedEx",
     "destination": "FedEx Ground",
-    "service": "FedEx SmartPost (Ground Economy)"
+    "service": "FedEx Ground"
   },
   {
     "barcode": "384322828226",
     "carrier": "FedEx",
     "destination": "FedEx Ground",
-    "service": "Ground Commercial"
+    "service": "FedEx Ground"
   },
   {
     "barcode": "420945239241990416101752551488",
@@ -50,13 +50,13 @@
   {
     "barcode": "1Z9999999999999999",
     "carrier": "UPS",
-    "destination": "UPS Ground",
-    "service": "Ground Commercial"
+    "destination": "UPS",
+    "service": "UPS Pickup"
   },
   {
     "barcode": "9405511206214589218204",
     "carrier": "USPS",
-    "destination": "USPS Mail Cage",
-    "service": "Ground Advantage Military"
+    "destination": "USPS",
+    "service": "USPS Postal"
   }
 ]

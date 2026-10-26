@@ -1,4 +1,4 @@
-// Shipping Pickup Verification Engine - Clean & Scaled
+// Marathon Press Shipping Verification Engine (marathonpress.com)
 (function() {
   let knownLabels = [];
   let scanHistory = [];
@@ -83,7 +83,7 @@
       };
     }
 
-    // 2. UPS Mail Innovations (UPSMI)
+    // 2. UPS MAIL INNOVATIONS (UPSMI)
     // 18-24 digits starting with 80 or 82, or starting with 92748
     if (/^80\d{16,24}$/.test(code) || /^82\d{16,24}$/.test(code) || /^92748\d+$/.test(code)) {
       return {
@@ -94,7 +94,7 @@
       };
     }
 
-    // 3. DHL eCommerce / Express
+    // 3. DHL ECOMMERCE / EXPRESS
     // GS1-128 postal routing code starting with 420[ZIP]92419... / 93419...
     if (/^420\d{5}(92419|93419|94419)\d+$/i.test(code) || /^(92419|93419|94419)\d{15,}$/.test(code)) {
       return {
@@ -108,72 +108,62 @@
     if (/^\d{10}$/.test(code)) {
       return {
         barcode: code,
-        destination: 'DHL Express',
-        service: 'DHL Express Airway Bill',
+        destination: 'DHL',
+        service: 'DHL Express',
         verified: true
       };
     }
 
-    // 4. FEDEX GROUND / SMARTPOST
-    // A. 15-digit or 20-digit barcodes
+    // 4. FEDEX GROUND (Consolidated Ground & SmartPost)
+    // A. 15-digit or 20-digit barcodes or 96... GS1 barcodes
     if (/^\d{15}$/.test(code) || /^00\d{18}$/.test(code) || /^96\d{20,}/.test(code)) {
       return {
         barcode: code,
         destination: 'FedEx Ground',
-        service: 'Ground Commercial / Home Delivery',
+        service: 'FedEx Ground',
         verified: true
       };
     }
 
-    // B. 12-digit FedEx Ground / SmartPost (prefixes 38..., 39..., 30..., 31...)
-    // Example: 384322836030 (FedEx Ground), 384315914220 (FedEx SmartPost)
+    // B. 12-digit FedEx Ground / SmartPost (prefixes 30... through 39...)
+    // Examples: 384322836030, 384315914220, 384322828226
     if (/^(30|31|32|33|34|35|36|37|38|39)\d{10}$/.test(code)) {
       return {
         barcode: code,
         destination: 'FedEx Ground',
-        service: 'Ground / SmartPost',
+        service: 'FedEx Ground',
         verified: true
       };
     }
 
-    // 5. FEDEX EXPRESS
+    // 5. FEDEX EXPRESS (Express 2Day, Priority, Standard)
     // 12-digit Express tracking numbers (prefixes starting with 7, 8, 9, 4, 5, 6, 1, 2)
-    // Example: 879136980972 (FedEx 2Day / Express)
+    // Example: 879136980972
     if (/^\d{12}$/.test(code)) {
       return {
         barcode: code,
         destination: 'FedEx Express',
-        service: 'Express Priority / 2Day',
+        service: 'FedEx Express',
         verified: true
       };
     }
 
-    // 6. UPS Ground / Air (1Z...)
+    // 6. UPS (Unified Ground + Air into one "UPS" destination)
     if (/^1Z[0-9A-Z]{16}$/i.test(code)) {
-      const sc = code.substring(8, 10).toUpperCase();
-      let loc = 'UPS Ground';
-      let srv = 'Ground Commercial';
-      if (['01', '13', '14'].includes(sc)) {
-        loc = 'UPS Next Day Air';
-        srv = 'Air Express Pickup';
-      } else if (['02', '59'].includes(sc)) {
-        loc = 'UPS 2nd Day Air';
-        srv = 'Air Express Pickup';
-      }
       return {
         barcode: code,
-        destination: loc,
-        service: srv,
+        destination: 'UPS',
+        service: 'UPS Pickup',
         verified: true
       };
     }
 
-    // 7. USPS Postal
+    // 7. USPS (Clean "USPS" destination)
     if (/^9[2-5]\d{20}/.test(code) || /^420\d{27}/.test(code)) {
       return {
         barcode: code,
-        destination: 'USPS Mail Cage',
-        service: 'Ground Advantage / Priority',
+        destination: 'USPS',
+        service: 'USPS Postal',
         verified: true
       };
     }
@@ -347,11 +337,11 @@
   if (exportCsvBtn) {
     exportCsvBtn.addEventListener('click', function() {
       if (!scanHistory.length) return alert('No scans to export.');
-      const csv = 'Time,Barcode,Destination,Service,Status\n' + scanHistory.map(s => `"${s.time}","${s.barcode}","${s.destination}","${s.service}","${s.status}"`).join('\n');
+      const csv = 'Time,Barcode,Carrier,Service,Status\n' + scanHistory.map(s => `"${s.time}","${s.barcode}","${s.destination}","${s.service}","${s.status}"`).join('\n');
       const blob = new Blob([csv], { type: 'text/csv' });
       const a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
-      a.download = `shipping-scans-${new Date().toISOString().slice(0, 10)}.csv`;
+      a.download = `marathon-scans-${new Date().toISOString().slice(0, 10)}.csv`;
       a.click();
     });
   }

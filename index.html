@@ -3,18 +3,21 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Shipping Pickup Station - Scan Verification</title>
+  <title>Marathon Press - Shipping Pickup Station</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;700;800;900&family=JetBrains+Mono:wght@600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css" />
 </head>
 <body class="theme-display">
-  <!-- Minimal Top Header Bar -->
+  <!-- Marathon Press Branded Header -->
   <header class="top-bar">
     <div class="brand">
-      <span class="pulse-indicator"></span>
-      <span class="station-name">SHIPPING PICKUP STATION</span>
+      <div class="brand-logo-mark">MP</div>
+      <div class="brand-text-wrap">
+        <span class="station-name">MARATHON PRESS</span>
+        <span class="station-sub">Shipping Verification • marathonpress.com</span>
+      </div>
     </div>
 
     <!-- Scanner Capture Box -->
@@ -46,12 +49,12 @@
         <span class="status-badge-text" id="statusBadgeText">READY</span>
       </div>
 
-      <!-- Giant Carrier Pickup Destination (Maximized font size) -->
+      <!-- Giant Carrier Pickup Destination -->
       <div class="sign-destination" id="signDestination">
         SCAN BARCODE
       </div>
 
-      <!-- Specific Service Sub-line -->
+      <!-- Service Sub-line -->
       <div class="sign-subdest" id="signSubdest">Awaiting package scan</div>
 
       <!-- High-contrast Monospace Barcode Number -->
@@ -64,7 +67,10 @@
   <!-- Slide-in Audit Log Drawer -->
   <aside class="log-drawer" id="logDrawer">
     <div class="drawer-header">
-      <h3>Scan History Log</h3>
+      <div>
+        <h3>Marathon Press - Scan History Log</h3>
+        <span class="text-dim text-xs">marathonpress.com</span>
+      </div>
       <div class="drawer-btns">
         <button id="exportCsvBtn" type="button" class="pill-btn sm">EXPORT CSV</button>
         <button id="clearLogBtn" type="button" class="pill-btn sm danger">CLEAR</button>
@@ -77,7 +83,7 @@
           <tr>
             <th>Time</th>
             <th>Barcode</th>
-            <th>Carrier / Destination</th>
+            <th>Carrier</th>
             <th>Service Type</th>
             <th>Status</th>
           </tr>
