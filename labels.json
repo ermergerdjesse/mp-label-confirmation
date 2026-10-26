@@ -1,5 +1,11 @@
 [
   {
+    "barcode": "384322828226",
+    "carrier": "FedEx",
+    "destination": "FedEx Express",
+    "service": "Priority Overnight"
+  },
+  {
     "barcode": "420945239241990416101752551488",
     "carrier": "DHL",
     "destination": "DHL",
@@ -25,12 +31,6 @@
   },
   {
     "barcode": "879136980972",
-    "carrier": "FedEx",
-    "destination": "FedEx Express",
-    "service": "Priority Overnight"
-  },
-  {
-    "barcode": "783492019283",
     "carrier": "FedEx",
     "destination": "FedEx Express",
     "service": "Standard Overnight"
