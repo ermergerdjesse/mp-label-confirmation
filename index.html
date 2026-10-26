@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Label & Barcode Scan Center</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- Top Navigation Bar -->
+  <header class="navbar">
+    <div class="nav-container">
+      <div class="brand">
+        <svg class="brand-icon" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"></path>
+          <line x1="7" y1="12" x2="17" y2="12"></line>
+          <line x1="7" y1="8" x2="17" y2="8"></line>
+          <line x1="7" y1="16" x2="17" y2="16"></line>
+        </svg>
+        <span class="brand-title">ScanHub</span>
+        <span class="badge live-badge">LIVE SCANNER</span>
+      </div>
+
+      <div class="nav-stats">
+        <div class="stat-pill">
+          <span class="stat-label">Session Scans:</span>
+          <span class="stat-val" id="statScanCount">0</span>
+        </div>
+        <div class="stat-pill">
+          <span class="stat-label">Valid:</span>
+          <span class="stat-val success-val" id="statValidCount">0</span>
+        </div>
+        <div class="stat-pill">
+          <span class="stat-label">Errors:</span>
+          <span class="stat-val danger-val" id="statErrorCount">0</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="app-layout">
+    <!-- Left Column: Scanner Station & Live Feed -->
+    <section class="scan-station">
+      <!-- Input Card -->
+      <div class="card scan-input-card">
+        <div class="card-header">
+          <div>
+            <h2>Barcode / Label Scanner</h2>
+            <p class="text-muted">Use a physical handheld USB/Bluetooth scanner or enter manually below.</p>
+          </div>
+          <div class="station-actions">
+            <button id="toggleCameraBtn" class="btn btn-secondary">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                <circle cx="12" cy="13" r="4"></circle>
+              </svg>
+              <span>Camera Scan</span>
+            </button>
+            <button id="soundToggleBtn" class="btn btn-icon" title="Toggle Beep Audio">
+              🔊
+            </button>
+          </div>
+        </div>
+
+        <!-- Camera Scanner Area (Hidden by default) -->
+        <div id="cameraContainer" class="camera-panel" style="display: none;">
+          <video id="videoPreview" playsinline></video>
+          <div class="camera-target-box">
+            <div class="scan-laser"></div>
+          </div>
+          <div class="camera-footer">
+            <span>Align label barcode within red reticle</span>
+            <button id="closeCameraBtn" class="btn btn-sm btn-secondary">Stop Camera</button>
+          </div>
+        </div>
+
+        <!-- High-priority Scan Input Field -->
+        <form id="scanForm" class="scan-form" onsubmit="return false;">
+          <div class="input-glow-wrapper">
+            <input 
+              type="text" 
+              id="barcodeInput" 
+              placeholder="Waiting for scan... (Auto-focused)" 
+              autocomplete="off" 
+              autofocus 
+              spellcheck="false"
+            />
+            <button type="submit" id="manualSubmitBtn" class="btn btn-primary">Process</button>
+          </div>
+          <div class="input-hint">
+            <span>⚡ Scanner Mode Active: Keypresses immediately capture &amp; parse barcodes</span>
+            <label class="auto-clear-toggle">
+              <input type="checkbox" id="autoPostbackCheck" checked /> Auto-postback on scan
+            </label>
+          </div>
+        </form>
+
+        <!-- Dynamic Scan Feedback Alert Banner -->
+        <div id="scanFeedback" class="feedback-banner idle">
+          <div class="feedback-icon" id="feedbackIcon">●</div>
+          <div class="feedback-text">
+            <strong id="feedbackTitle">Ready to Scan</strong>
+            <span id="feedbackDetail">Scan a shipping label, tracking code, or job barcode.</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Verified Label Detail Inspector Card -->
+      <div class="card inspection-card" id="inspectionCard">
+        <div class="card-header">
+          <h3>Current Label Breakdown</h3>
+          <span class="badge" id="labelFormatBadge">Awaiting Data</span>
+        </div>
+
+        <div class="inspector-grid" id="inspectorGrid">
+          <div class="field-item">
+            <span class="field-title">Barcode / Value</span>
+            <span class="field-val" id="insBarcode">—</span>
+          </div>
+          <div class="field-item">
+            <span class="field-title">Format / Carrier</span>
+            <span class="field-val" id="insType">—</span>
+          </div>
+          <div class="field-item">
+            <span class="field-title">Job # / Ref ID</span>
+            <span class="field-val" id="insJobId">—</span>
+          </div>
+          <div class="field-item">
+            <span class="field-title">Destination / Info</span>
+            <span class="field-val" id="insDest">—</span>
+          </div>
+          <div class="field-item">
+            <span class="field-title">Service Level</span>
+            <span class="field-val" id="insService">—</span>
+          </div>
+          <div class="field-item">
+            <span class="field-title">Verification Status</span>
+            <span class="field-val" id="insStatus">—</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Right Column: Scan History & Audit Logs -->
+    <section class="history-section">
+      <div class="card history-card">
+        <div class="card-header">
+          <div>
+            <h3>Scan Activity Log</h3>
+            <span class="text-muted text-sm">Real-time scan logs and verification events</span>
+          </div>
+          <div class="history-actions">
+            <button id="exportCsvBtn" class="btn btn-secondary btn-sm">Export CSV</button>
+            <button id="clearLogBtn" class="btn btn-danger btn-sm">Clear</button>
+          </div>
+        </div>
+
+        <div class="table-container">
+          <table class="scan-table" id="scanTable">
+            <thead>
+              <tr>
+                <th>Time</th>
+                <th>Barcode</th>
+                <th>Carrier / Type</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="scanLogBody">
+              <!-- Dynamically populated via app.js -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ZXing Barcode Scanning Library for Camera Support -->
+  <script src="https://cdn.jsdelivr.net/npm/@zxing/library@latest/umd/index.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
