@@ -5,28 +5,24 @@ document.addEventListener('DOMContentLoaded', () => {
   let soundEnabled = true;
   let codeReader = null;
   let cameraActive = false;
+  let debounceTimer = null;
 
   // DOM Elements
   const barcodeInput = document.getElementById('barcodeInput');
   const scanForm = document.getElementById('scanForm');
+  const timerHint = document.getElementById('timerHint');
+  
+  // Hero Display Elements
   const scanFeedback = document.getElementById('scanFeedback');
   const feedbackIcon = document.getElementById('feedbackIcon');
   const feedbackTitle = document.getElementById('feedbackTitle');
+  const feedbackBarcode = document.getElementById('feedbackBarcode');
   const feedbackDetail = document.getElementById('feedbackDetail');
-  
-  // Stats
+
+  // Stats Elements
   const statScanCount = document.getElementById('statScanCount');
   const statValidCount = document.getElementById('statValidCount');
   const statErrorCount = document.getElementById('statErrorCount');
-
-  // Breakdown Inspector
-  const labelFormatBadge = document.getElementById('labelFormatBadge');
-  const insBarcode = document.getElementById('insBarcode');
-  const insType = document.getElementById('insType');
-  const insJobId = document.getElementById('insJobId');
-  const insDest = document.getElementById('insDest');
-  const insService = document.getElementById('insService');
-  const insStatus = document.getElementById('insStatus');
 
   // Table & Controls
   const scanLogBody = document.getElementById('scanLogBody');
@@ -38,24 +34,24 @@ document.addEventListener('DOMContentLoaded', () => {
   const cameraContainer = document.getElementById('cameraContainer');
   const videoPreview = document.getElementById('videoPreview');
 
-  // Load sample label database
+  // Load database
   fetch('labels.json')
     .then(r => r.json())
     .then(data => {
       knownLabels = data;
     })
     .catch(err => {
-      console.warn('Could not load labels.json, fallback parsing enabled.', err);
+      console.warn('labels.json not found or unreadable, format heuristics will run.', err);
     });
 
-  // Keep scanner focused on click anywhere on page
+  // Always keep input focused for fast scanning
   window.addEventListener('click', (e) => {
-    if (!['BUTTON', 'A', 'INPUT'].includes(e.target.tagName)) {
+    if (!['BUTTON', 'A'].includes(e.target.tagName)) {
       barcodeInput.focus();
     }
   });
 
-  // Sound Synth via Web Audio API (No external sound files required)
+  // Sound Synth via Web Audio API (No audio files needed)
   const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
   function playBeep(success = true) {
     if (!soundEnabled) return;
@@ -66,14 +62,14 @@ document.addEventListener('DOMContentLoaded', () => {
       gain.connect(audioCtx.destination);
       if (success) {
         osc.frequency.setValueAtTime(880, audioCtx.currentTime); // High pitch A5
-        gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
-        osc.start();
-        osc.stop(audioCtx.currentTime + 0.08);
-      } else {
-        osc.frequency.setValueAtTime(220, audioCtx.currentTime); // Low buzz
         gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
         osc.start();
-        osc.stop(audioCtx.currentTime + 0.25);
+        osc.stop(audioCtx.currentTime + 0.12);
+      } else {
+        osc.frequency.setValueAtTime(220, audioCtx.currentTime); // Low warning buzz
+        gain.gain.setValueAtTime(0.25, audioCtx.currentTime);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.3);
       }
     } catch(e) {}
   }
@@ -83,89 +79,99 @@ document.addEventListener('DOMContentLoaded', () => {
     soundToggleBtn.innerText = soundEnabled ? '🔊' : '🔇';
   });
 
-  // Process Raw Barcode Scan
+  // 1-SECOND AUTO-ENTER DEBOUNCING MECHANISM
+  barcodeInput.addEventListener('input', () => {
+    clearTimeout(debounceTimer);
+    const currentVal = barcodeInput.value.trim();
+
+    if (currentVal.length === 0) {
+      timerHint.innerText = '⚡ Ready. Auto-submits 1.0s after final character';
+      return;
+    }
+
+    timerHint.innerText = '⏳ Auto-submitting in 1 second...';
+
+    debounceTimer = setTimeout(() => {
+      if (barcodeInput.value.trim().length > 0) {
+        handleScan(barcodeInput.value);
+      }
+    }, 1000); // exactly 1 second auto-trigger
+  });
+
+  // Main Scan Processing Engine
   function handleScan(rawVal) {
+    clearTimeout(debounceTimer);
+    timerHint.innerText = '⚡ Ready. Auto-submits 1.0s after final character';
+
     const val = rawVal.trim();
     if (!val) return;
 
     const timestamp = new Date().toLocaleTimeString();
-    
-    // Pattern identification & database lookup
     const parsed = identifyBarcode(val);
-    
+
     // Update Stats
     statScanCount.innerText = parseInt(statScanCount.innerText) + 1;
+
     if (parsed.valid) {
       statValidCount.innerText = parseInt(statValidCount.innerText) + 1;
-      setFeedback('success', '✓ Scanned & Verified', `${parsed.type}: ${parsed.barcode}`);
+      setHugeDisplay('success', 'SCANNED & VERIFIED', parsed.barcode, `${parsed.type} • ${parsed.destination || 'Ready for Next Step'}`);
       playBeep(true);
     } else {
       statErrorCount.innerText = parseInt(statErrorCount.innerText) + 1;
-      setFeedback('danger', '⚠ Unrecognized / Invalid Barcode', `Value: ${val}`);
+      setHugeDisplay('danger', 'INVALID / UNRECOGNIZED', parsed.barcode, 'Barcode does not match expected format or records');
       playBeep(false);
     }
 
-    // Populate Inspector
-    labelFormatBadge.innerText = parsed.type;
-    insBarcode.innerText = parsed.barcode;
-    insType.innerText = parsed.type;
-    insJobId.innerText = parsed.jobId || 'N/A';
-    insDest.innerText = parsed.destination || 'Unspecified';
-    insService.innerText = parsed.service || 'Standard';
-    insStatus.innerHTML = parsed.valid 
-      ? '<span class="tag-success">MATCH / VERIFIED</span>' 
-      : '<span class="tag-danger">UNREGISTERED</span>';
-
-    // Log to table
+    // Add to audit table
     scanHistory.unshift({
       time: timestamp,
       barcode: parsed.barcode,
       type: parsed.type,
-      status: parsed.valid ? 'VERIFIED' : 'UNKNOWN'
+      status: parsed.valid ? 'VERIFIED' : 'FAILED'
     });
 
     renderTable();
 
-    // Clear input and keep focused
+    // Reset input and refocus immediately
     barcodeInput.value = '';
     barcodeInput.focus();
   }
 
   // Barcode pattern recognition logic
   function identifyBarcode(code) {
-    // Check local database first
+    // 1. Direct database match
     const matched = knownLabels.find(l => l.barcode.toLowerCase() === code.toLowerCase());
     if (matched) {
       return { ...matched, valid: true };
     }
 
-    // Heuristics for standard logistics barcodes
+    // 2. Common carrier / production formats
     if (/^1Z[0-9A-Z]{16}$/i.test(code)) {
-      return { barcode: code, type: 'UPS Tracking', jobId: 'EXT-UPS', destination: 'Domestic UPS', service: 'Ground', valid: true };
+      return { barcode: code, type: 'UPS Ground Tracking', destination: 'UPS Commercial Hub', valid: true };
     } else if (/^94\d{20}$/.test(code) || /^92\d{20}$/.test(code) || /^420\d{27}$/.test(code)) {
-      return { barcode: code, type: 'USPS Ground Advantage', jobId: 'USPS-POST', destination: 'USPS Base/Domestic', service: 'Priority / Ground', valid: true };
+      return { barcode: code, type: 'USPS Ground Advantage', destination: 'USPS Postal System', valid: true };
     } else if (/^\d{12}$/.test(code) || /^\d{15}$/.test(code)) {
-      return { barcode: code, type: 'FedEx Express', jobId: 'FEDEX-EXP', destination: 'FedEx Hub', service: 'Standard Overnight', valid: true };
+      return { barcode: code, type: 'FedEx Express / Ground', destination: 'FedEx Hub', valid: true };
     } else if (/^JOB-\d+$/i.test(code)) {
-      return { barcode: code, type: 'Internal Production Job', jobId: code, destination: 'Bindery / Press', service: 'Internal Work Order', valid: true };
+      return { barcode: code, type: 'Internal Production Job', destination: 'Press & Bindery Workflow', valid: true };
     }
 
-    // Unmatched fallback
+    // 3. Fallback unverified
     return {
       barcode: code,
-      type: 'Custom / Unknown',
-      jobId: '—',
-      destination: 'Unknown Destination',
-      service: 'General Scan',
+      type: 'Unknown Format',
+      destination: 'Unregistered',
       valid: false
     };
   }
 
-  function setFeedback(state, title, detail) {
-    scanFeedback.className = `feedback-banner ${state}`;
-    feedbackIcon.innerText = state === 'success' ? '✔' : '✖';
+  // Update Giant Verification Banner
+  function setHugeDisplay(state, title, barcode, subtitle) {
+    scanFeedback.className = `hero-feedback ${state}`;
+    feedbackIcon.innerText = state === 'success' ? '✔ VERIFIED' : '✖ FAILED';
     feedbackTitle.innerText = title;
-    feedbackDetail.innerText = detail;
+    feedbackBarcode.innerText = barcode;
+    feedbackDetail.innerText = subtitle;
   }
 
   function renderTable() {
@@ -179,45 +185,28 @@ document.addEventListener('DOMContentLoaded', () => {
     `).join('');
   }
 
-  // Handle Form Submission
+  // Form Enter Key Handler
   scanForm.addEventListener('submit', (e) => {
     e.preventDefault();
     handleScan(barcodeInput.value);
   });
 
-  // Fast typing buffer detection (typical for handheld hardware scanners)
-  let scanBuffer = '';
-  let lastKeyTime = Date.now();
-
-  window.addEventListener('keydown', (e) => {
-    const currentTime = Date.now();
-    // Fast consecutive characters (< 40ms) usually denote a hardware scanner
-    if (e.key === 'Enter') {
-      if (scanBuffer.length > 2) {
-        handleScan(scanBuffer);
-        scanBuffer = '';
-      }
-    } else if (e.key.length === 1) {
-      if (currentTime - lastKeyTime > 100) {
-        scanBuffer = '';
-      }
-      scanBuffer += e.key;
-      lastKeyTime = currentTime;
-    }
-  });
-
-  // Clear History
+  // Table Actions
   clearLogBtn.addEventListener('click', () => {
-    if (confirm('Clear all scan history logs?')) {
+    if (confirm('Clear all scan logs?')) {
       scanHistory = [];
       renderTable();
       statScanCount.innerText = '0';
       statValidCount.innerText = '0';
       statErrorCount.innerText = '0';
+      scanFeedback.className = 'hero-feedback idle';
+      feedbackIcon.innerText = 'READY';
+      feedbackTitle.innerText = 'READY TO SCAN';
+      feedbackBarcode.innerText = '—';
+      feedbackDetail.innerText = 'Scan barcode or label to verify';
     }
   });
 
-  // Export CSV
   exportCsvBtn.addEventListener('click', () => {
     if (!scanHistory.length) {
       alert('No scans to export.');
@@ -234,8 +223,8 @@ document.addEventListener('DOMContentLoaded', () => {
     URL.revokeObjectURL(url);
   });
 
-  // Camera Barcode Scanning (ZXing Library)
-  toggleCameraBtn.addEventListener('click', async () => {
+  // Camera Scanning Support
+  toggleCameraBtn.addEventListener('click', () => {
     if (cameraActive) {
       stopCamera();
     } else {
@@ -247,7 +236,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function startCamera() {
     if (typeof ZXing === 'undefined') {
-      alert('Barcode library loading, please try again in a moment.');
+      alert('Barcode camera library loading, please try again.');
       return;
     }
     codeReader = new ZXing.BrowserMultiFormatReader();
@@ -255,7 +244,7 @@ document.addEventListener('DOMContentLoaded', () => {
     cameraActive = true;
     toggleCameraBtn.innerText = 'Stop Camera';
 
-    codeReader.decodeFromVideoDevice(null, videoPreview, (result, err) => {
+    codeReader.decodeFromVideoDevice(null, videoPreview, (result) => {
       if (result) {
         handleScan(result.getText());
       }
