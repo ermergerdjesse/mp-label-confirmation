@@ -1,27 +1,26 @@
 [
   {
-    "barcode": "JOB-104920",
-    "type": "Internal Press Job",
-    "destination": "HP Indigo Press 12000"
-  },
-  {
-    "barcode": "JOB-104921",
-    "type": "Bindery Work Order",
-    "destination": "Horizon BQ-480 Perfect Binder"
+    "barcode": "879136980972",
+    "carrier": "FedEx Express",
+    "destination": "FedEx Express",
+    "subNote": "or FedEx Ground"
   },
   {
     "barcode": "1Z9999999999999999",
-    "type": "UPS Ground",
-    "destination": "Chicago Terminal"
+    "carrier": "UPS",
+    "destination": "UPS Pickup Spot",
+    "subNote": "UPS Ground / Next Day"
   },
   {
     "barcode": "9405511206214589218204",
-    "type": "USPS Ground Advantage",
-    "destination": "FPO/APO Military Post"
+    "carrier": "USPS",
+    "destination": "USPS Mail Cage",
+    "subNote": "Ground Advantage Military"
   },
   {
-    "barcode": "783492019283",
-    "type": "FedEx Ground",
-    "destination": "Distribution Hub"
+    "barcode": "JOB-104920",
+    "carrier": "Internal",
+    "destination": "Bindery Staging Pallet",
+    "subNote": "Horizon BQ-480"
   }
 ]
