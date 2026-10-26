@@ -1,10 +1,8 @@
-# Label Scanning & Barcode Web App
+# Label Scanning & Barcode Center
 
-A production barcode and label scanner interface built for GitHub Pages.
+Production label scanning station with auto-enter timer and high-visibility status card.
 
-## ✨ Features
-* **Hardware Barcode Scanner Support**: Automatically captures rapid keystrokes from USB or Bluetooth handheld barcode guns.
-* **Camera Scanning**: Integrated ZXing optical scanner for mobile cameras and webcams.
-* **Instant Verification**: Matches scanned codes against `labels.json` and evaluates carrier formats (UPS, USPS Ground Advantage, FedEx, Job IDs).
-* **Audio Tone Feedback**: Web Audio synthesized beep alerts on success or error (no audio files needed).
-* **Live Audit Log**: Export scan sessions directly to CSV.
+## Features
+- **1-Second Auto Submit**: Automatically processes the scan 1000ms after the scanner finishes sending data.
+- **Giant Verified Display**: Massive high-contrast green banner with the barcode number clearly visible from several feet away.
+- **Removed Breakdown**: Kept clean and focused on high-speed scanning and audit logging.
