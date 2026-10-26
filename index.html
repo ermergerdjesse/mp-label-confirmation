@@ -17,19 +17,19 @@
       <span class="station-name">SHIPPING PICKUP STATION</span>
     </div>
 
-    <!-- Scanner Capture Form -->
-    <form id="scanForm" class="scan-bar-container" autocomplete="off" action="javascript:void(0);">
+    <!-- Scanner Capture Box -->
+    <div class="scan-bar-container">
       <input 
         type="text" 
         id="barcodeInput" 
-        placeholder="Ready for barcode scan..." 
+        placeholder="Scan or paste barcode..." 
         autocomplete="off" 
         autofocus 
         spellcheck="false"
       />
-      <button type="submit" id="submitScanBtn" class="pill-btn scan-go-btn">SUBMIT</button>
+      <button type="button" id="submitScanBtn" class="pill-btn scan-go-btn">ENTER / VERIFY</button>
       <span class="scan-status-pill" id="scannerStatusBadge">READY</span>
-    </form>
+    </div>
 
     <div class="top-controls">
       <button id="soundToggleBtn" type="button" class="pill-btn" title="Toggle audio tone">AUDIO: ON</button>
