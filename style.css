@@ -76,7 +76,7 @@ html, body {
   border: 1px solid #2d3848;
   padding: 4px 8px 4px 12px;
   border-radius: 8px;
-  width: 440px;
+  width: 480px;
 }
 
 .scan-bar-container input {
@@ -95,8 +95,10 @@ html, body {
   background: #1f6feb !important;
   color: #fff !important;
   border-color: #388bfd !important;
-  padding: 4px 10px !important;
+  padding: 6px 14px !important;
   font-size: 11px !important;
+  letter-spacing: 0.5px;
+  cursor: pointer;
 }
 
 .scan-go-btn:hover {
@@ -205,16 +207,13 @@ html, body {
   color: #4f5f74;
 }
 
-/* =========================================
-   VERIFIED STATE (GIANT NEON GREEN DISPLAY)
-   ========================================= */
+/* VERIFIED STATE */
 .display-card.success {
   background: radial-gradient(circle at center, #071f11 0%, #020905 100%);
   border: 5px solid var(--neon-green);
   box-shadow: 0 0 60px rgba(0, 255, 76, 0.3), inset 0 0 40px rgba(0, 255, 76, 0.15);
 }
 
-/* TOP STATUS BADGE: VERIFIED */
 .sign-status {
   display: inline-flex;
   align-items: center;
@@ -235,7 +234,6 @@ html, body {
   border: 2px solid rgba(0, 255, 76, 0.4);
 }
 
-/* SUBHEADING: SCANNED & VERIFIED */
 .sign-subheading {
   font-size: clamp(26px, 3.8vw, 54px);
   font-weight: 900;
@@ -247,7 +245,6 @@ html, body {
   line-height: 1.1;
 }
 
-/* GIGANTIC CARRIER PICKUP DESTINATION */
 .sign-destination {
   font-size: clamp(48px, 7.8vw, 114px);
   font-weight: 900;
@@ -269,7 +266,6 @@ html, body {
   margin-top: 6px;
 }
 
-/* BOTTOM BARCODE NUMBER */
 .sign-barcode {
   font-family: var(--font-mono);
   font-size: clamp(20px, 2.5vw, 38px);
@@ -285,9 +281,7 @@ html, body {
   word-break: break-all;
 }
 
-/* =========================================
-   FAILED / UNRECOGNIZED STATE (RED DISPLAY)
-   ========================================= */
+/* FAILED STATE */
 .display-card.danger {
   background: radial-gradient(circle at center, #250709 0%, #0d0102 100%);
   border: 5px solid var(--neon-red);
