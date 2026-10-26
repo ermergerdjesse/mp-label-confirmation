@@ -43,7 +43,7 @@ html, body {
 .brand {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
 }
 
 .pulse-indicator {
@@ -67,7 +67,7 @@ html, body {
   color: var(--text-dim);
 }
 
-/* Active Hidden-yet-Focused Scan Input */
+/* Scanner Input Field */
 .scan-bar-container {
   display: flex;
   align-items: center;
@@ -76,7 +76,7 @@ html, body {
   border: 1px solid #2d3848;
   padding: 4px 12px;
   border-radius: 8px;
-  width: 380px;
+  width: 400px;
 }
 
 .scan-bar-container input {
@@ -101,13 +101,13 @@ html, body {
   white-space: nowrap;
 }
 
-.scan-status-pill.counting {
-  background: #e3a900;
+.scan-status-pill.scanning {
+  background: #00ff4c;
   color: #000;
   font-weight: 800;
 }
 
-/* Top Buttons */
+/* Control Buttons */
 .top-controls {
   display: flex;
   gap: 10px;
@@ -142,9 +142,7 @@ html, body {
   border-color: var(--neon-red);
 }
 
-/* ==========================================================
-   GIGANTIC BILLBOARD SCREEN (MATCHING USER SCREENSHOT)
-   ========================================================== */
+/* Billboard Screen */
 .billboard-container {
   width: 100%;
   height: calc(100vh - 64px);
@@ -177,8 +175,9 @@ html, body {
   background: #090d14;
 }
 
-.display-card.idle .status-text {
+.display-card.idle .status-badge-text {
   color: #8da2be;
+  border-color: #232a36;
 }
 
 .display-card.idle .sign-subheading {
@@ -194,7 +193,7 @@ html, body {
 }
 
 /* =========================================
-   SUCCESS / VERIFIED (THE SCREENSHOT EXACT LOOK)
+   VERIFIED STATE (GIANT NEON GREEN DISPLAY)
    ========================================= */
 .display-card.success {
   background: radial-gradient(circle at center, #071f11 0%, #020905 100%);
@@ -202,47 +201,42 @@ html, body {
   box-shadow: 0 0 60px rgba(0, 255, 76, 0.3), inset 0 0 40px rgba(0, 255, 76, 0.15);
 }
 
-/* 1. TOP GREEN BADGE: ✓ VERIFIED */
+/* TOP STATUS BADGE: VERIFIED */
 .sign-status {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 14px;
   margin-bottom: 8px;
 }
 
-.status-icon {
-  font-size: clamp(38px, 5vw, 68px);
+.status-badge-text {
+  font-size: clamp(38px, 5.5vw, 76px);
   font-weight: 900;
-  color: var(--neon-green);
-  line-height: 1;
-}
-
-.status-text {
-  font-size: clamp(44px, 6.2vw, 88px);
-  font-weight: 900;
-  letter-spacing: 2px;
+  letter-spacing: 3px;
   color: var(--neon-green);
   text-transform: uppercase;
   line-height: 1;
   text-shadow: 0 0 25px var(--green-glow);
+  padding: 4px 28px;
+  border-radius: 8px;
+  border: 2px solid rgba(0, 255, 76, 0.4);
 }
 
-/* 2. SUB-HEADING: SCANNED & VERIFIED */
+/* SUBHEADING: SCANNED & VERIFIED */
 .sign-subheading {
-  font-size: clamp(30px, 4.4vw, 62px);
+  font-size: clamp(26px, 3.8vw, 54px);
   font-weight: 900;
-  letter-spacing: 1px;
+  letter-spacing: 1.5px;
   color: #ffffff;
   text-transform: uppercase;
-  margin-top: 4px;
-  margin-bottom: 12px;
+  margin-top: 14px;
+  margin-bottom: 8px;
   line-height: 1.1;
 }
 
-/* 3. GIGANTIC DESTINATION (CARRIER / SPOT): FedEx Express */
+/* GIGANTIC CARRIER PICKUP DESTINATION (e.g. FedEx Ground or FedEx Express) */
 .sign-destination {
-  font-size: clamp(52px, 8.5vw, 126px);
+  font-size: clamp(48px, 7.8vw, 114px);
   font-weight: 900;
   letter-spacing: -1px;
   color: #ffffff;
@@ -255,29 +249,29 @@ html, body {
 }
 
 .sign-subdest {
-  font-size: clamp(28px, 4vw, 56px);
-  font-weight: 800;
-  color: #ffffff;
-  line-height: 1.15;
-  margin-top: 2px;
+  font-size: clamp(22px, 3vw, 42px);
+  font-weight: 700;
+  color: #a0aec0;
+  line-height: 1.2;
+  margin-top: 6px;
 }
 
-/* 4. BOTTOM BARCODE NUMBER */
+/* BOTTOM BARCODE NUMBER */
 .sign-barcode {
   font-family: var(--font-mono);
-  font-size: clamp(24px, 3.2vw, 48px);
+  font-size: clamp(22px, 3vw, 44px);
   font-weight: 800;
   color: #e2e8f0;
   letter-spacing: 2px;
   margin-top: 24px;
   padding: 6px 24px;
   border-radius: 8px;
-  background-color: rgba(0, 0, 0, 0.55);
+  background-color: rgba(0, 0, 0, 0.6);
   border: 1px solid rgba(255, 255, 255, 0.15);
 }
 
 /* =========================================
-   FAILED / INVALID STATE (RED ERROR BILLBOARD)
+   FAILED / UNRECOGNIZED STATE (RED DISPLAY)
    ========================================= */
 .display-card.danger {
   background: radial-gradient(circle at center, #250709 0%, #0d0102 100%);
@@ -285,9 +279,9 @@ html, body {
   box-shadow: 0 0 60px rgba(255, 51, 68, 0.35), inset 0 0 40px rgba(255, 51, 68, 0.15);
 }
 
-.display-card.danger .status-icon,
-.display-card.danger .status-text {
+.display-card.danger .status-badge-text {
   color: var(--neon-red);
+  border-color: rgba(255, 51, 68, 0.4);
   text-shadow: 0 0 25px var(--red-glow);
 }
 
@@ -309,8 +303,8 @@ html, body {
 .log-drawer {
   position: fixed;
   top: 64px;
-  right: -520px;
-  width: 500px;
+  right: -560px;
+  width: 540px;
   height: calc(100vh - 64px);
   background-color: #0b0f17;
   border-left: 2px solid #232c3d;
