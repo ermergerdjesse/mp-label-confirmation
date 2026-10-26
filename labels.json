@@ -1,26 +1,38 @@
 [
   {
     "barcode": "879136980972",
-    "carrier": "FedEx Express",
+    "carrier": "FedEx",
     "destination": "FedEx Express",
-    "subNote": "or FedEx Ground"
+    "service": "Priority Overnight"
+  },
+  {
+    "barcode": "783492019283",
+    "carrier": "FedEx",
+    "destination": "FedEx Express",
+    "service": "Standard Overnight"
+  },
+  {
+    "barcode": "9622001900000000000000",
+    "carrier": "FedEx",
+    "destination": "FedEx Ground",
+    "service": "Ground Commercial"
   },
   {
     "barcode": "1Z9999999999999999",
     "carrier": "UPS",
-    "destination": "UPS Pickup Spot",
-    "subNote": "UPS Ground / Next Day"
+    "destination": "UPS Ground",
+    "service": "Ground Commercial"
   },
   {
     "barcode": "9405511206214589218204",
     "carrier": "USPS",
     "destination": "USPS Mail Cage",
-    "subNote": "Ground Advantage Military"
+    "service": "Ground Advantage Military"
   },
   {
     "barcode": "JOB-104920",
     "carrier": "Internal",
-    "destination": "Bindery Staging Pallet",
-    "subNote": "Horizon BQ-480"
+    "destination": "Press & Bindery Lane",
+    "service": "Horizon BQ-480 / PUR"
   }
 ]
