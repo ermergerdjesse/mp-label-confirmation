@@ -1,13 +1,10 @@
 # Shipping Pickup Station Scanner
 
-An oversized, high-visibility warehouse monitor display built for scanning shipping labels and sorting packages into the correct carrier pickup spots.
+An industrial monitor billboard display for warehouse shipping and sorting bays.
 
-## Features
-- **Matches Monitor Display**:
-  - `✓ VERIFIED` in giant green neon lettering.
-  - `SCANNED & VERIFIED` subheading.
-  - Giant pickup location (e.g. `FedEx Express` or `FedEx Ground`).
-  - Barcode displayed in clean monospace.
-- **Auto-Submits in 1 Second**: Automatically triggers 1 second after typing stops or on hardware scanner Enter.
-- **Fullscreen Mode**: One-click toggle for mounted monitors / TV displays in shipping bays.
-- **Slide-in Audit Log**: History log and CSV export tucked cleanly into a side drawer.
+## Updates
+- **No Emojis**: Clean, professional industrial typography and high-visibility neon indicators.
+- **Immediate Scan Burst Detection**: Automatically submits the instant the barcode scan finishes (65ms idle burst threshold), with zero 1-second lag. Also supports Enter key.
+- **Distinct FedEx Ground vs FedEx Express Routing**:
+  - **FedEx Express**: 12-digit standard airbill tracking numbers (e.g. `879136980972`).
+  - **FedEx Ground**: 15-digit / 20-digit barcodes and `96...` GS1 barcodes.
