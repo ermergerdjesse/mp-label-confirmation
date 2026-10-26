@@ -10,17 +10,17 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body class="app-body">
-  <!-- Modern Clean Top Navigation -->
+  <!-- Top Navigation Bar - Marathon Press Red & Dark Charcoal -->
   <header class="app-header">
     <div class="brand-cluster">
-      <div class="brand-avatar">MP</div>
+      <div class="brand-badge">MP</div>
       <div class="brand-details">
-        <span class="brand-title">Marathon Press</span>
-        <span class="brand-subtitle">Dispatch & Verification Console</span>
+        <span class="brand-title">MARATHON PRESS</span>
+        <span class="brand-subtitle">Shipping Dispatch Console</span>
       </div>
     </div>
 
-    <!-- Active Scanner Input Field -->
+    <!-- Scanner Capture Box -->
     <div class="scanner-input-container">
       <div class="input-icon">
         <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
@@ -36,13 +36,13 @@
         autofocus 
         spellcheck="false"
       />
-      <button type="button" id="submitScanBtn" class="verify-btn">Verify</button>
-      <span class="status-indicator-pill" id="scannerStatusBadge">Active</span>
+      <button type="button" id="submitScanBtn" class="verify-btn">VERIFY</button>
+      <span class="status-indicator-pill" id="scannerStatusBadge">READY</span>
     </div>
 
     <!-- Utility Controls -->
     <div class="header-actions">
-      <button id="soundToggleBtn" type="button" class="action-btn" title="Toggle audio chime">Audio: On</button>
+      <button id="soundToggleBtn" type="button" class="action-btn" title="Toggle audio tone">Audio: On</button>
       <button id="historyToggleBtn" type="button" class="action-btn" title="Toggle scan history drawer">Log (<span id="statCount">0</span>)</button>
       <button id="fullscreenBtn" type="button" class="action-btn" title="Toggle fullscreen mode">Fullscreen</button>
     </div>
@@ -55,33 +55,33 @@
       <div class="badge-wrapper">
         <div class="status-pill" id="statusBadge">
           <span class="status-dot" id="statusDot"></span>
-          <span class="status-label" id="statusBadgeText">Ready for Scan</span>
+          <span class="status-label" id="statusBadgeText">Ready to Scan</span>
         </div>
       </div>
 
       <!-- Giant Primary Carrier Destination -->
       <div class="carrier-display" id="signDestination">
-        Ready
+        SCAN BARCODE
       </div>
 
       <!-- Secondary Service Clarification -->
       <div class="service-display" id="signSubdest">
-        Scan package shipping label to verify pickup lane
+        Awaiting package scan for pickup sorting
       </div>
 
       <!-- Clean Monospace Barcode Tag -->
       <div class="barcode-tag" id="signBarcode">
-        Awaiting input
+        WAITING FOR INPUT
       </div>
     </section>
   </main>
 
-  <!-- Slide-over History Drawer -->
+  <!-- Slide-out History Drawer -->
   <aside class="history-drawer" id="logDrawer">
     <div class="drawer-top">
       <div>
-        <h3>Activity Log</h3>
-        <p class="drawer-caption">Current shift scans & timestamps</p>
+        <h3>Marathon Press Scan Log</h3>
+        <p class="drawer-caption">Live Shift Scans & Verification History</p>
       </div>
       <div class="drawer-buttons">
         <button id="exportCsvBtn" type="button" class="drawer-btn">Export CSV</button>

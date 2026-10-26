@@ -63,7 +63,7 @@
     } catch(e) {}
   }
 
-  // CARRIER & SERVICE DETERMINATION - STRICT CLEAN ROUTING
+  // CARRIER & SERVICE DETERMINATION
   function parseCarrierRoute(raw) {
     const code = (raw || '').replace(/[^a-zA-Z0-9]/g, '').trim();
     if (!code) return null;
@@ -112,7 +112,6 @@
     }
 
     // 4. FEDEX GROUND (Consolidated Ground & SmartPost)
-    // 15-digit, 20-digit, 96... GS1 barcodes
     if (/^\d{15}$/.test(code) || /^00\d{18}$/.test(code) || /^96\d{20,}/.test(code)) {
       return {
         barcode: code,
@@ -152,7 +151,6 @@
     }
 
     // 7. USPS (Strictly displays "USPS" - NO "Mail Cage")
-    // Barcodes starting with 92, 93, 94, 95 or 420 (e.g. 9400150105800133120300)
     if (/^9[2-5]\d{20}/.test(code) || /^420\d{27}/.test(code)) {
       return {
         barcode: code,
@@ -223,7 +221,7 @@
     // Reset input
     inputEl.value = '';
     if (badgeEl) {
-      badgeEl.innerText = 'Active';
+      badgeEl.innerText = 'READY';
       badgeEl.className = 'status-indicator-pill';
     }
     inputEl.focus();
@@ -275,13 +273,13 @@
     const val = inputEl.value.trim();
     if (!val) {
       if (badgeEl) {
-        badgeEl.innerText = 'Active';
+        badgeEl.innerText = 'READY';
         badgeEl.className = 'status-indicator-pill';
       }
       return;
     }
     if (badgeEl) {
-      badgeEl.innerText = 'Reading';
+      badgeEl.innerText = 'READING';
       badgeEl.className = 'status-indicator-pill busy';
     }
 
