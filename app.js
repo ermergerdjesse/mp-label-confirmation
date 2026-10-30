@@ -1,11 +1,23 @@
-// Marathon Press Dispatch & Verification Console
+// =============================================================================
+// MARATHON PRESS - SHIPPING VERIFICATION LOGIC (app.js)
+// Now with Distinct Carrier Color Classes for Easy Visual Sorting
+//
+// CARRIER COLOR KEY:
+//   - FedEx Express: Vivid Orange (#ff7700) -> .carrier-fedex-express
+//   - FedEx Ground:  Emerald Green (#10b981) -> .carrier-fedex-ground
+//   - UPS:           UPS Gold (#f59e0b)      -> .carrier-ups
+//   - USPS:          Postal Blue (#3b82f6)   -> .carrier-usps
+//   - DHL:           DHL Yellow (#eab308)    -> .carrier-dhl
+//   - UPSMI:         Violet/Purple (#a855f7) -> .carrier-upsmi
+// =============================================================================
+
 (function() {
   let knownLabels = [];
   let scanHistory = [];
   let soundEnabled = true;
   let debounceTimer = null;
 
-  // Cache elements
+  // Cache HTML elements
   const inputEl = document.getElementById('barcodeInput');
   const submitBtn = document.getElementById('submitScanBtn');
   const badgeEl = document.getElementById('scannerStatusBadge');
@@ -24,7 +36,7 @@
   const exportCsvBtn = document.getElementById('exportCsvBtn');
   const fullscreenBtn = document.getElementById('fullscreenBtn');
 
-  // Load labels.json safely
+  // Load static label database (labels.json) if available
   fetch('labels.json')
     .then(r => r.json())
     .then(data => {
@@ -63,42 +75,60 @@
     } catch(e) {}
   }
 
-  // CARRIER & SERVICE DETERMINATION
+  // ===========================================================================
+  // CARRIER & DESTINATION ROUTING ENGINE
+  // Returns:
+  //   - destination: Text to display in giant letters
+  //   - service: Secondary explanation text
+  //   - colorClass: CSS theme class for the giant background card
+  // ===========================================================================
   function parseCarrierRoute(raw) {
     const code = (raw || '').replace(/[^a-zA-Z0-9]/g, '').trim();
     if (!code) return null;
 
-    // 1. Direct database match in labels.json
+    // STEP 1: Check labels.json first for exact manual overrides
     const record = knownLabels.find(l => {
       const dbCode = (l.barcode || '').replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
       return dbCode === code.toLowerCase();
     });
 
     if (record) {
+      let cClass = 'carrier-fedex-ground';
+      const destLower = (record.destination || '').toLowerCase();
+      if (destLower.includes('express')) cClass = 'carrier-fedex-express';
+      else if (destLower.includes('upsmi')) cClass = 'carrier-upsmi';
+      else if (destLower.includes('ups')) cClass = 'carrier-ups';
+      else if (destLower.includes('usps')) cClass = 'carrier-usps';
+      else if (destLower.includes('dhl')) cClass = 'carrier-dhl';
+
       return {
         barcode: record.barcode,
         destination: record.destination || record.carrier,
         service: record.service || '',
+        colorClass: cClass,
         verified: true
       };
     }
 
-    // 2. UPS MAIL INNOVATIONS (UPSMI)
+    // STEP 2: UPS MAIL INNOVATIONS (UPSMI) -> VIOLET/PURPLE
+    // 18-24 digits starting with 80 or 82, or postal codes starting with 92748
     if (/^80\d{16,24}$/.test(code) || /^82\d{16,24}$/.test(code) || /^92748\d+$/.test(code)) {
       return {
         barcode: code,
         destination: 'UPSMI',
         service: 'UPS Mail Innovations',
+        colorClass: 'carrier-upsmi',
         verified: true
       };
     }
 
-    // 3. DHL ECOMMERCE / EXPRESS
+    // STEP 3: DHL ECOMMERCE & EXPRESS -> DHL YELLOW
     if (/^420\d{5}(92419|93419|94419)\d+$/i.test(code) || /^(92419|93419|94419)\d{15,}$/.test(code)) {
       return {
         barcode: code,
         destination: 'DHL',
         service: 'DHL eCommerce',
+        colorClass: 'carrier-dhl',
         verified: true
       };
     }
@@ -107,79 +137,94 @@
         barcode: code,
         destination: 'DHL',
         service: 'DHL Express',
+        colorClass: 'carrier-dhl',
         verified: true
       };
     }
 
-    // 4. FEDEX GROUND (Consolidated Ground & SmartPost)
+    // STEP 4: FEDEX GROUND & SMARTPOST -> EMERALD GREEN
+    //  - 15-digit and 20-digit barcodes
+    //  - 96... GS1 barcodes
+    //  - 12-digit Ground & SmartPost tracking starting with 30-39 (e.g. 384322836030, 384315914220)
     if (/^\d{15}$/.test(code) || /^00\d{18}$/.test(code) || /^96\d{20,}/.test(code)) {
       return {
         barcode: code,
         destination: 'FedEx Ground',
         service: 'FedEx Ground',
+        colorClass: 'carrier-fedex-ground',
         verified: true
       };
     }
-    // 12-digit FedEx Ground / SmartPost (prefixes 30... through 39...)
     if (/^(30|31|32|33|34|35|36|37|38|39)\d{10}$/.test(code)) {
       return {
         barcode: code,
         destination: 'FedEx Ground',
         service: 'FedEx Ground',
+        colorClass: 'carrier-fedex-ground',
         verified: true
       };
     }
 
-    // 5. FEDEX EXPRESS (Express 2Day, Priority, Standard)
+    // STEP 5: FEDEX EXPRESS -> VIVID ORANGE
+    // 12-digit Express tracking numbers (2Day, Priority, Overnight, Standard)
+    // Prefixes starting with 7, 8, 9, 4, 5, 6, 1, 2 (e.g. 879136980972)
     if (/^\d{12}$/.test(code)) {
       return {
         barcode: code,
         destination: 'FedEx Express',
         service: 'FedEx Express',
+        colorClass: 'carrier-fedex-express',
         verified: true
       };
     }
 
-    // 6. UPS (All UPS Ground & Air consolidated into one "UPS")
+    // STEP 6: UPS (All Ground + Air unified into "UPS") -> UPS GOLD
     if (/^1Z[0-9A-Z]{16}$/i.test(code)) {
       return {
         barcode: code,
         destination: 'UPS',
         service: 'UPS Pickup',
+        colorClass: 'carrier-ups',
         verified: true
       };
     }
 
-    // 7. USPS (Strictly displays "USPS" - NO "Mail Cage")
+    // STEP 7: USPS -> POSTAL BLUE
+    // Standard 22-digit to 30-digit postal barcodes starting with 92, 93, 94, 95 or 420
     if (/^9[2-5]\d{20}/.test(code) || /^420\d{27}/.test(code)) {
       return {
         barcode: code,
         destination: 'USPS',
         service: 'Postal Pickup',
+        colorClass: 'carrier-usps',
         verified: true
       };
     }
 
-    // 8. Internal job
+    // STEP 8: INTERNAL PRESS / BINDERY WORK ORDERS -> MARATHON RED
     if (/^JOB/i.test(code)) {
       return {
         barcode: code,
         destination: 'Internal Job',
         service: 'Bindery / Press Staging',
+        colorClass: 'carrier-internal',
         verified: true
       };
     }
 
-    // Fallback unverified
+    // FALLBACK: Barcode not recognized -> DANGER RED
     return {
       barcode: code,
       destination: 'Unrecognized Label',
       service: 'Check label format or route manually',
+      colorClass: 'danger',
       verified: false
     };
   }
 
-  // Core execution function
+  // ===========================================================================
+  // SCREEN UPDATE TRIGGER
+  // ===========================================================================
   function triggerVerification() {
     clearTimeout(debounceTimer);
     const rawVal = inputEl.value;
@@ -191,7 +236,8 @@
     const time = new Date().toLocaleTimeString();
 
     if (result.verified) {
-      cardEl.className = 'display-panel success';
+      // Apply the specific carrier color class
+      cardEl.className = 'display-panel ' + result.colorClass;
       statusBadgeText.innerText = 'Verified';
       destEl.innerText = result.destination;
       subdestEl.innerText = result.service;
@@ -206,19 +252,20 @@
       playTone(false);
     }
 
-    // History log
+    // Add to audit history
     scanHistory.unshift({
       time: time,
       barcode: result.barcode,
       destination: result.destination,
       service: result.service,
+      colorClass: result.colorClass,
       status: result.verified ? 'Verified' : 'Failed'
     });
 
     if (statCount) statCount.innerText = scanHistory.length;
     renderLog();
 
-    // Reset input
+    // Reset input box and ensure cursor stays locked inside
     inputEl.value = '';
     if (badgeEl) {
       badgeEl.innerText = 'READY';
@@ -227,17 +274,29 @@
     inputEl.focus();
   }
 
+  // Render scan drawer table rows
   function renderLog() {
     if (!historyBody) return;
-    historyBody.innerHTML = scanHistory.map(item => `
-      <tr>
-        <td>${item.time}</td>
-        <td>${item.barcode}</td>
-        <td>${item.destination}</td>
-        <td>${item.service}</td>
-        <td><span class="${item.status === 'Verified' ? 'tag-verified' : 'tag-failed'}">${item.status}</span></td>
-      </tr>
-    `).join('');
+    historyBody.innerHTML = scanHistory.map(item => {
+      let tagClass = 'tag-verified';
+      if (item.status === 'Failed') tagClass = 'tag-failed';
+      else if (item.colorClass === 'carrier-fedex-express') tagClass = 'log-fedex-express';
+      else if (item.colorClass === 'carrier-fedex-ground')  tagClass = 'log-fedex-ground';
+      else if (item.colorClass === 'carrier-ups')           tagClass = 'log-ups';
+      else if (item.colorClass === 'carrier-usps')          tagClass = 'log-usps';
+      else if (item.colorClass === 'carrier-dhl')           tagClass = 'log-dhl';
+      else if (item.colorClass === 'carrier-upsmi')         tagClass = 'log-upsmi';
+
+      return `
+        <tr>
+          <td>${item.time}</td>
+          <td>${item.barcode}</td>
+          <td class="${tagClass}">${item.destination}</td>
+          <td>${item.service}</td>
+          <td><span class="${item.status === 'Verified' ? 'tag-verified' : 'tag-failed'}">${item.status}</span></td>
+        </tr>
+      `;
+    }).join('');
   }
 
   // Event Listeners
@@ -290,7 +349,6 @@
     }, 400);
   });
 
-  // Sound toggle
   if (soundBtn) {
     soundBtn.addEventListener('click', function() {
       soundEnabled = !soundEnabled;
@@ -299,7 +357,6 @@
     });
   }
 
-  // Log drawer
   if (historyBtn && logDrawer) {
     historyBtn.addEventListener('click', function() {
       logDrawer.classList.toggle('open');
@@ -330,7 +387,6 @@
     });
   }
 
-  // Fullscreen
   if (fullscreenBtn) {
     fullscreenBtn.addEventListener('click', function() {
       if (!document.fullscreenElement) {
@@ -344,7 +400,6 @@
     });
   }
 
-  // Auto-focus input
   window.addEventListener('click', function(e) {
     if (!['BUTTON', 'A'].includes(e.target.tagName)) {
       inputEl.focus();

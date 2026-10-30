@@ -1,10 +1,13 @@
-/* Marathon Press Brand Theme - Red, White, Deep Black/Charcoal */
+/* ==========================================================================
+   MARATHON PRESS SHIPPING CONFIRMATION STYLES
+   With Distinct Carrier Color Coding for Instant Warehouse Recognition
+   ========================================================================== */
+
 :root {
-  /* Brand Core Colors */
+  /* Marathon Press Brand Base */
   --mp-red: #d3202a;
   --mp-red-hover: #e62833;
   --mp-red-muted: rgba(211, 32, 42, 0.15);
-  --mp-red-border: rgba(211, 32, 42, 0.4);
   
   --mp-black: #0a0c0f;
   --mp-charcoal: #12151b;
@@ -15,12 +18,7 @@
   --text-muted: #9ba3af;
   --text-dim: #656d7a;
 
-  /* Verification Status Indicators (Clean, no cheesy arcade glow) */
-  --status-verified-border: #ffffff;
-  --status-verified-accent: #d3202a;
-  --status-pill-bg: #1f2530;
-  --status-pill-text: #ffffff;
-  
+  /* Fonts */
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
 }
@@ -41,7 +39,9 @@ html, body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* Header */
+/* ==========================================================================
+   HEADER / NAVIGATION
+   ========================================================================== */
 .app-header {
   height: 66px;
   background-color: var(--mp-charcoal);
@@ -89,7 +89,7 @@ html, body {
   letter-spacing: 0.3px;
 }
 
-/* Scanner Input Bar */
+/* Scanner Input box */
 .scanner-input-container {
   display: flex;
   align-items: center;
@@ -162,7 +162,6 @@ html, body {
   color: #ff6b75;
 }
 
-/* Header Action Buttons */
 .header-actions {
   display: flex;
   align-items: center;
@@ -187,7 +186,9 @@ html, body {
   color: #ffffff;
 }
 
-/* Terminal Stage */
+/* ==========================================================================
+   TERMINAL STAGE / GIANT BILLBOARD DISPLAY
+   ========================================================================== */
 .terminal-stage {
   height: calc(100vh - 66px);
   display: flex;
@@ -197,7 +198,6 @@ html, body {
   background-color: var(--mp-black);
 }
 
-/* Display Card - Clean High Contrast Marathon Red & White */
 .display-panel {
   width: 100%;
   max-width: 1380px;
@@ -211,12 +211,12 @@ html, body {
   justify-content: center;
   text-align: center;
   padding: 36px 40px;
-  transition: all 0.15s ease-in-out;
+  transition: all 0.18s ease-in-out;
   position: relative;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
 }
 
-/* Idle State */
+/* IDLE: Waiting for first scan */
 .display-panel.idle {
   border-color: var(--mp-border);
   background-color: var(--mp-card-bg);
@@ -226,21 +226,145 @@ html, body {
   color: #4b5563;
 }
 
-/* Verified Success State (Marathon White & Red Accent) */
-.display-panel.success {
-  background: radial-gradient(circle at center, #1c202a 0%, #12151c 100%);
-  border: 4px solid var(--mp-red);
-  box-shadow: 0 0 50px rgba(211, 32, 42, 0.25), inset 0 0 20px rgba(211, 32, 42, 0.08);
+/* ==========================================================================
+   CARRIER COLOR THEMES (DISTINCT PICKUP RECOGNITION)
+   ========================================================================== */
+
+/* 1. FEDEX EXPRESS -> VIVID ORANGE */
+.display-panel.carrier-fedex-express {
+  background: radial-gradient(circle at center, #2e1605 0%, #160a02 100%);
+  border: 5px solid #ff7700;
+  box-shadow: 0 0 60px rgba(255, 119, 0, 0.35), inset 0 0 25px rgba(255, 119, 0, 0.1);
+}
+.display-panel.carrier-fedex-express .status-pill {
+  background-color: #ff7700;
+  border-color: #ff7700;
+  color: #ffffff;
+  box-shadow: 0 2px 14px rgba(255, 119, 0, 0.5);
+}
+.display-panel.carrier-fedex-express .carrier-display {
+  color: #ffffff;
+  text-shadow: 0 4px 20px rgba(255, 119, 0, 0.4);
 }
 
-/* Error / Not Recognized State */
+/* 2. FEDEX GROUND -> EMERALD GREEN */
+.display-panel.carrier-fedex-ground {
+  background: radial-gradient(circle at center, #052618 0%, #03140c 100%);
+  border: 5px solid #10b981;
+  box-shadow: 0 0 60px rgba(16, 185, 129, 0.35), inset 0 0 25px rgba(16, 185, 129, 0.1);
+}
+.display-panel.carrier-fedex-ground .status-pill {
+  background-color: #059669;
+  border-color: #10b981;
+  color: #ffffff;
+  box-shadow: 0 2px 14px rgba(16, 185, 129, 0.5);
+}
+.display-panel.carrier-fedex-ground .carrier-display {
+  color: #ffffff;
+  text-shadow: 0 4px 20px rgba(16, 185, 129, 0.4);
+}
+
+/* 3. UPS -> WARM UPS GOLD / AMBER */
+.display-panel.carrier-ups {
+  background: radial-gradient(circle at center, #2b1f05 0%, #160f02 100%);
+  border: 5px solid #f59e0b;
+  box-shadow: 0 0 60px rgba(245, 158, 11, 0.35), inset 0 0 25px rgba(245, 158, 11, 0.1);
+}
+.display-panel.carrier-ups .status-pill {
+  background-color: #d97706;
+  border-color: #f59e0b;
+  color: #ffffff;
+  box-shadow: 0 2px 14px rgba(245, 158, 11, 0.5);
+}
+.display-panel.carrier-ups .carrier-display {
+  color: #ffffff;
+  text-shadow: 0 4px 20px rgba(245, 158, 11, 0.4);
+}
+
+/* 4. USPS -> POSTAL BLUE */
+.display-panel.carrier-usps {
+  background: radial-gradient(circle at center, #061e3d 0%, #030e1e 100%);
+  border: 5px solid #3b82f6;
+  box-shadow: 0 0 60px rgba(59, 130, 246, 0.35), inset 0 0 25px rgba(59, 130, 246, 0.1);
+}
+.display-panel.carrier-usps .status-pill {
+  background-color: #2563eb;
+  border-color: #3b82f6;
+  color: #ffffff;
+  box-shadow: 0 2px 14px rgba(59, 130, 246, 0.5);
+}
+.display-panel.carrier-usps .carrier-display {
+  color: #ffffff;
+  text-shadow: 0 4px 20px rgba(59, 130, 246, 0.4);
+}
+
+/* 5. DHL -> HIGH-VIS YELLOW */
+.display-panel.carrier-dhl {
+  background: radial-gradient(circle at center, #2c2504 0%, #161202 100%);
+  border: 5px solid #eab308;
+  box-shadow: 0 0 60px rgba(234, 179, 8, 0.35), inset 0 0 25px rgba(234, 179, 8, 0.1);
+}
+.display-panel.carrier-dhl .status-pill {
+  background-color: #eab308;
+  border-color: #facc15;
+  color: #181502;
+  font-weight: 900;
+  box-shadow: 0 2px 14px rgba(234, 179, 8, 0.5);
+}
+.display-panel.carrier-dhl .carrier-display {
+  color: #ffffff;
+  text-shadow: 0 4px 20px rgba(234, 179, 8, 0.4);
+}
+
+/* 6. UPSMI (UPS Mail Innovations) -> VIOLET / PURPLE */
+.display-panel.carrier-upsmi {
+  background: radial-gradient(circle at center, #220f38 0%, #11071c 100%);
+  border: 5px solid #a855f7;
+  box-shadow: 0 0 60px rgba(168, 85, 247, 0.35), inset 0 0 25px rgba(168, 85, 247, 0.1);
+}
+.display-panel.carrier-upsmi .status-pill {
+  background-color: #9333ea;
+  border-color: #a855f7;
+  color: #ffffff;
+  box-shadow: 0 2px 14px rgba(168, 85, 247, 0.5);
+}
+.display-panel.carrier-upsmi .carrier-display {
+  color: #ffffff;
+  text-shadow: 0 4px 20px rgba(168, 85, 247, 0.4);
+}
+
+/* 7. INTERNAL PRODUCTION JOB -> MARATHON RED */
+.display-panel.carrier-internal {
+  background: radial-gradient(circle at center, #2b0b0e 0%, #140507 100%);
+  border: 5px solid var(--mp-red);
+  box-shadow: 0 0 60px rgba(211, 32, 42, 0.35), inset 0 0 25px rgba(211, 32, 42, 0.1);
+}
+.display-panel.carrier-internal .status-pill {
+  background-color: var(--mp-red);
+  border-color: var(--mp-red);
+  color: #ffffff;
+}
+
+/* DANGER / UNRECOGNIZED BARCODE */
 .display-panel.danger {
   background: radial-gradient(circle at center, #261114 0%, #140709 100%);
-  border: 4px solid #ef4444;
-  box-shadow: 0 0 50px rgba(239, 68, 68, 0.25);
+  border: 5px solid #ef4444;
+  box-shadow: 0 0 60px rgba(239, 68, 68, 0.35);
+}
+.display-panel.danger .status-pill {
+  background-color: #ef4444;
+  border-color: #ef4444;
+  color: #ffffff;
+}
+.display-panel.danger .carrier-display {
+  color: #fca5a5;
+  font-size: clamp(48px, 8vw, 110px);
+}
+.display-panel.danger .service-display {
+  color: #fca5a5;
 }
 
-/* Status Pill */
+/* Status Pill Shared */
 .badge-wrapper {
   margin-bottom: 20px;
 }
@@ -249,7 +373,7 @@ html, body {
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  padding: 8px 24px;
+  padding: 8px 26px;
   border-radius: 100px;
   background-color: #1e2430;
   border: 1px solid #323b4c;
@@ -264,31 +388,10 @@ html, body {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background-color: var(--text-dim);
-}
-
-.display-panel.success .status-pill {
-  background-color: var(--mp-red);
-  border-color: var(--mp-red);
-  color: #ffffff;
-  box-shadow: 0 2px 12px rgba(211, 32, 42, 0.4);
-}
-
-.display-panel.success .status-dot {
   background-color: #ffffff;
 }
 
-.display-panel.danger .status-pill {
-  background-color: #ef4444;
-  border-color: #ef4444;
-  color: #ffffff;
-}
-
-.display-panel.danger .status-dot {
-  background-color: #ffffff;
-}
-
-/* Massive Primary Carrier Typography */
+/* Giant Carrier Typography */
 .carrier-display {
   font-size: clamp(68px, 13vw, 175px);
   font-weight: 900;
@@ -300,36 +403,23 @@ html, body {
   word-break: break-word;
 }
 
-.display-panel.danger .carrier-display {
-  color: #fca5a5;
-  font-size: clamp(48px, 8vw, 110px);
-}
-
-/* Secondary Service Line */
+/* Secondary service line */
 .service-display {
   font-size: clamp(22px, 3.2vw, 44px);
   font-weight: 600;
-  color: var(--text-muted);
+  color: #e5e7eb;
   line-height: 1.2;
   margin-bottom: 24px;
 }
 
-.display-panel.success .service-display {
-  color: #e5e7eb;
-}
-
-.display-panel.danger .service-display {
-  color: #fca5a5;
-}
-
-/* Monospace Scanned Barcode Tag */
+/* Monospace Scanned Barcode display tag */
 .barcode-tag {
   font-family: var(--font-mono);
   font-size: clamp(18px, 2.2vw, 32px);
   font-weight: 700;
-  color: #d1d5db;
-  background-color: #0b0d12;
-  border: 1px solid #28303d;
+  color: #ffffff;
+  background-color: rgba(0, 0, 0, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.25);
   padding: 8px 26px;
   border-radius: 8px;
   letter-spacing: 2px;
@@ -337,13 +427,9 @@ html, body {
   word-break: break-all;
 }
 
-.display-panel.success .barcode-tag {
-  color: #ffffff;
-  border-color: rgba(255, 255, 255, 0.25);
-  background-color: rgba(0, 0, 0, 0.65);
-}
-
-/* History Drawer */
+/* ==========================================================================
+   LOG DRAWER
+   ========================================================================== */
 .history-drawer {
   position: fixed;
   top: 66px;
@@ -445,12 +531,11 @@ html, body {
   font-size: 12px;
 }
 
-.tag-verified {
-  color: #4ade80;
-  font-weight: 700;
-}
-
-.tag-failed {
-  color: #f87171;
-  font-weight: 700;
-}
+/* Color badges inside log table */
+.log-fedex-express { color: #ff9933; font-weight: 700; }
+.log-fedex-ground  { color: #34d399; font-weight: 700; }
+.log-ups           { color: #fbbf24; font-weight: 700; }
+.log-usps          { color: #60a5fa; font-weight: 700; }
+.log-dhl           { color: #facc15; font-weight: 700; }
+.log-upsmi         { color: #c084fc; font-weight: 700; }
+.tag-failed        { color: #f87171; font-weight: 700; }

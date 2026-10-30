@@ -4,13 +4,19 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Marathon Press - Shipping Pickup Verification</title>
+  
+  <!-- Web fonts for clean readable UI on warehouse monitors -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css" />
 </head>
 <body class="app-body">
-  <!-- Top Navigation Bar - Marathon Press Red & Dark Charcoal -->
+
+  <!-- =====================================================================
+       HEADER / TOP BAR
+       Contains station title, input box, and header action buttons.
+       ===================================================================== -->
   <header class="app-header">
     <div class="brand-cluster">
       <div class="brand-badge">MP</div>
@@ -20,7 +26,10 @@
       </div>
     </div>
 
-    <!-- Scanner Capture Box -->
+    <!-- 
+      SCANNER INPUT BOX:
+      Handheld USB/Bluetooth scanners transmit barcode numbers directly into this field.
+    -->
     <div class="scanner-input-container">
       <div class="input-icon">
         <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
@@ -40,7 +49,7 @@
       <span class="status-indicator-pill" id="scannerStatusBadge">READY</span>
     </div>
 
-    <!-- Utility Controls -->
+    <!-- Header action buttons -->
     <div class="header-actions">
       <button id="soundToggleBtn" type="button" class="action-btn" title="Toggle audio tone">Audio: On</button>
       <button id="historyToggleBtn" type="button" class="action-btn" title="Toggle scan history drawer">Log (<span id="statCount">0</span>)</button>
@@ -48,10 +57,20 @@
     </div>
   </header>
 
-  <!-- High-Visibility Terminal Stage -->
+  <!-- =====================================================================
+       MAIN VERIFICATION BILLBOARD (The big screen display)
+       `app.js` updates #displayCard with dynamic carrier color themes:
+         - carrier-fedex-express (Vivid Orange)
+         - carrier-fedex-ground  (Emerald Green)
+         - carrier-ups           (UPS Gold)
+         - carrier-usps          (Postal Blue)
+         - carrier-dhl           (DHL Yellow)
+         - carrier-upsmi         (Mail Innovations Purple)
+         - carrier-internal      (Marathon Press Red)
+       ===================================================================== -->
   <main class="terminal-stage">
     <section class="display-panel idle" id="displayCard">
-      <!-- Status Badge -->
+      <!-- Status pill: Verified / Not Recognized -->
       <div class="badge-wrapper">
         <div class="status-pill" id="statusBadge">
           <span class="status-dot" id="statusDot"></span>
@@ -59,24 +78,27 @@
         </div>
       </div>
 
-      <!-- Giant Primary Carrier Destination -->
+      <!-- Giant carrier destination text -->
       <div class="carrier-display" id="signDestination">
         SCAN BARCODE
       </div>
 
-      <!-- Secondary Service Clarification -->
+      <!-- Secondary service line under carrier -->
       <div class="service-display" id="signSubdest">
         Awaiting package scan for pickup sorting
       </div>
 
-      <!-- Clean Monospace Barcode Tag -->
+      <!-- Scanned tracking number readout -->
       <div class="barcode-tag" id="signBarcode">
         WAITING FOR INPUT
       </div>
     </section>
   </main>
 
-  <!-- Slide-out History Drawer -->
+  <!-- =====================================================================
+       SCAN HISTORY DRAWER
+       Slides out from the right when clicking "Log" in the header.
+       ===================================================================== -->
   <aside class="history-drawer" id="logDrawer">
     <div class="drawer-top">
       <div>
@@ -100,11 +122,14 @@
             <th>Status</th>
           </tr>
         </thead>
-        <tbody id="scanHistoryBody"></tbody>
+        <tbody id="scanHistoryBody">
+          <!-- JS fills this table in as packages get scanned -->
+        </tbody>
       </table>
     </div>
   </aside>
 
+  <!-- Main logic script -->
   <script src="app.js"></script>
 </body>
 </html>
