@@ -1,22 +1,56 @@
 /* ==========================================================================
    MARATHON PRESS SHIPPING CONFIRMATION STYLES
-   With Distinct Carrier Color Coding for Instant Warehouse Recognition
+   With Carrier-Specific Color Coding for Instant Warehouse Recognition
    ========================================================================== */
 
 :root {
-  /* Marathon Press Brand Base */
+  /* Brand Core */
   --mp-red: #d3202a;
   --mp-red-hover: #e62833;
-  --mp-red-muted: rgba(211, 32, 42, 0.15);
-  
   --mp-black: #0a0c0f;
   --mp-charcoal: #12151b;
-  --mp-card-bg: #161a22;
+  --mp-card-bg: #151922;
   --mp-border: #262c37;
   
   --mp-white: #ffffff;
   --text-muted: #9ba3af;
   --text-dim: #656d7a;
+
+  /* --- CARRIER COLOR THEMES --- */
+  /* FedEx Ground: Vibrant Kelly Emerald Green */
+  --color-fedex-ground: #10b981;
+  --color-fedex-ground-glow: rgba(16, 185, 129, 0.25);
+  --color-fedex-ground-bg: radial-gradient(circle at center, #062b1e 0%, #061510 100%);
+
+  /* FedEx Express: Signature Electric Orange */
+  --color-fedex-express: #ff6600;
+  --color-fedex-express-glow: rgba(255, 102, 0, 0.25);
+  --color-fedex-express-bg: radial-gradient(circle at center, #351502 0%, #170801 100%);
+
+  /* UPS: Warm Amber / Golden Brown */
+  --color-ups: #f59e0b;
+  --color-ups-glow: rgba(245, 158, 11, 0.25);
+  --color-ups-bg: radial-gradient(circle at center, #2e1c03 0%, #170d01 100%);
+
+  /* USPS: Classic Postal Blue */
+  --color-usps: #3b82f6;
+  --color-usps-glow: rgba(59, 130, 246, 0.25);
+  --color-usps-bg: radial-gradient(circle at center, #0b2247 0%, #061124 100%);
+
+  /* DHL: DHL Bright Canary Yellow */
+  --color-dhl: #eab308;
+  --color-dhl-glow: rgba(234, 179, 8, 0.25);
+  --color-dhl-bg: radial-gradient(circle at center, #332603 0%, #171101 100%);
+
+  /* UPSMI: Purple / Violet */
+  --color-upsmi: #a855f7;
+  --color-upsmi-glow: rgba(168, 85, 247, 0.25);
+  --color-upsmi-bg: radial-gradient(circle at center, #2b1147 0%, #130622 100%);
+
+  /* Internal Job: Marathon Red */
+  --color-internal: #d3202a;
+  --color-internal-glow: rgba(211, 32, 42, 0.25);
+  --color-internal-bg: radial-gradient(circle at center, #31080b 0%, #160305 100%);
 
   /* Fonts */
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -39,9 +73,7 @@ html, body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* ==========================================================================
-   HEADER / NAVIGATION
-   ========================================================================== */
+/* Header */
 .app-header {
   height: 66px;
   background-color: var(--mp-charcoal);
@@ -86,10 +118,9 @@ html, body {
   font-size: 11px;
   color: var(--text-muted);
   font-weight: 500;
-  letter-spacing: 0.3px;
 }
 
-/* Scanner Input box */
+/* Scanner Input */
 .scanner-input-container {
   display: flex;
   align-items: center;
@@ -158,7 +189,7 @@ html, body {
 }
 
 .status-indicator-pill.busy {
-  background-color: var(--mp-red-muted);
+  background-color: rgba(211, 32, 42, 0.2);
   color: #ff6b75;
 }
 
@@ -187,7 +218,7 @@ html, body {
 }
 
 /* ==========================================================================
-   TERMINAL STAGE / GIANT BILLBOARD DISPLAY
+   TERMINAL DISPLAY PANEL
    ========================================================================== */
 .terminal-stage {
   height: calc(100vh - 66px);
@@ -211,12 +242,12 @@ html, body {
   justify-content: center;
   text-align: center;
   padding: 36px 40px;
-  transition: all 0.18s ease-in-out;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   position: relative;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
 }
 
-/* IDLE: Waiting for first scan */
+/* IDLE */
 .display-panel.idle {
   border-color: var(--mp-border);
   background-color: var(--mp-card-bg);
@@ -227,129 +258,120 @@ html, body {
 }
 
 /* ==========================================================================
-   CARRIER COLOR THEMES (DISTINCT PICKUP RECOGNITION)
+   CARRIER-SPECIFIC COLOR CODING
+   Each carrier gets its own high-impact border, background tint, and badge.
    ========================================================================== */
 
-/* 1. FEDEX EXPRESS -> VIVID ORANGE */
-.display-panel.carrier-fedex-express {
-  background: radial-gradient(circle at center, #2e1605 0%, #160a02 100%);
-  border: 5px solid #ff7700;
-  box-shadow: 0 0 60px rgba(255, 119, 0, 0.35), inset 0 0 25px rgba(255, 119, 0, 0.1);
-}
-.display-panel.carrier-fedex-express .status-pill {
-  background-color: #ff7700;
-  border-color: #ff7700;
-  color: #ffffff;
-  box-shadow: 0 2px 14px rgba(255, 119, 0, 0.5);
-}
-.display-panel.carrier-fedex-express .carrier-display {
-  color: #ffffff;
-  text-shadow: 0 4px 20px rgba(255, 119, 0, 0.4);
-}
-
-/* 2. FEDEX GROUND -> EMERALD GREEN */
+/* 1. FEDEX GROUND (Emerald Green) */
 .display-panel.carrier-fedex-ground {
-  background: radial-gradient(circle at center, #052618 0%, #03140c 100%);
-  border: 5px solid #10b981;
-  box-shadow: 0 0 60px rgba(16, 185, 129, 0.35), inset 0 0 25px rgba(16, 185, 129, 0.1);
+  background: var(--color-fedex-ground-bg);
+  border: 4px solid var(--color-fedex-ground);
+  box-shadow: 0 0 55px var(--color-fedex-ground-glow);
 }
 .display-panel.carrier-fedex-ground .status-pill {
-  background-color: #059669;
-  border-color: #10b981;
-  color: #ffffff;
-  box-shadow: 0 2px 14px rgba(16, 185, 129, 0.5);
+  background-color: var(--color-fedex-ground);
+  border-color: var(--color-fedex-ground);
+  color: #042416;
 }
 .display-panel.carrier-fedex-ground .carrier-display {
-  color: #ffffff;
-  text-shadow: 0 4px 20px rgba(16, 185, 129, 0.4);
+  color: #a7f3d0;
 }
 
-/* 3. UPS -> WARM UPS GOLD / AMBER */
+/* 2. FEDEX EXPRESS (Signature Orange) */
+.display-panel.carrier-fedex-express {
+  background: var(--color-fedex-express-bg);
+  border: 4px solid var(--color-fedex-express);
+  box-shadow: 0 0 55px var(--color-fedex-express-glow);
+}
+.display-panel.carrier-fedex-express .status-pill {
+  background-color: var(--color-fedex-express);
+  border-color: var(--color-fedex-express);
+  color: #2b0b00;
+}
+.display-panel.carrier-fedex-express .carrier-display {
+  color: #fed7aa;
+}
+
+/* 3. UPS (Warm Amber Gold) */
 .display-panel.carrier-ups {
-  background: radial-gradient(circle at center, #2b1f05 0%, #160f02 100%);
-  border: 5px solid #f59e0b;
-  box-shadow: 0 0 60px rgba(245, 158, 11, 0.35), inset 0 0 25px rgba(245, 158, 11, 0.1);
+  background: var(--color-ups-bg);
+  border: 4px solid var(--color-ups);
+  box-shadow: 0 0 55px var(--color-ups-glow);
 }
 .display-panel.carrier-ups .status-pill {
-  background-color: #d97706;
-  border-color: #f59e0b;
-  color: #ffffff;
-  box-shadow: 0 2px 14px rgba(245, 158, 11, 0.5);
+  background-color: var(--color-ups);
+  border-color: var(--color-ups);
+  color: #261601;
 }
 .display-panel.carrier-ups .carrier-display {
-  color: #ffffff;
-  text-shadow: 0 4px 20px rgba(245, 158, 11, 0.4);
+  color: #fde68a;
 }
 
-/* 4. USPS -> POSTAL BLUE */
+/* 4. USPS (Postal Blue) */
 .display-panel.carrier-usps {
-  background: radial-gradient(circle at center, #061e3d 0%, #030e1e 100%);
-  border: 5px solid #3b82f6;
-  box-shadow: 0 0 60px rgba(59, 130, 246, 0.35), inset 0 0 25px rgba(59, 130, 246, 0.1);
+  background: var(--color-usps-bg);
+  border: 4px solid var(--color-usps);
+  box-shadow: 0 0 55px var(--color-usps-glow);
 }
 .display-panel.carrier-usps .status-pill {
-  background-color: #2563eb;
-  border-color: #3b82f6;
-  color: #ffffff;
-  box-shadow: 0 2px 14px rgba(59, 130, 246, 0.5);
+  background-color: var(--color-usps);
+  border-color: var(--color-usps);
+  color: #061938;
 }
 .display-panel.carrier-usps .carrier-display {
-  color: #ffffff;
-  text-shadow: 0 4px 20px rgba(59, 130, 246, 0.4);
+  color: #bfdbfe;
 }
 
-/* 5. DHL -> HIGH-VIS YELLOW */
+/* 5. DHL (Canary Yellow) */
 .display-panel.carrier-dhl {
-  background: radial-gradient(circle at center, #2c2504 0%, #161202 100%);
-  border: 5px solid #eab308;
-  box-shadow: 0 0 60px rgba(234, 179, 8, 0.35), inset 0 0 25px rgba(234, 179, 8, 0.1);
+  background: var(--color-dhl-bg);
+  border: 4px solid var(--color-dhl);
+  box-shadow: 0 0 55px var(--color-dhl-glow);
 }
 .display-panel.carrier-dhl .status-pill {
-  background-color: #eab308;
-  border-color: #facc15;
-  color: #181502;
-  font-weight: 900;
-  box-shadow: 0 2px 14px rgba(234, 179, 8, 0.5);
+  background-color: var(--color-dhl);
+  border-color: var(--color-dhl);
+  color: #2a1f00;
 }
 .display-panel.carrier-dhl .carrier-display {
-  color: #ffffff;
-  text-shadow: 0 4px 20px rgba(234, 179, 8, 0.4);
+  color: #fef08a;
 }
 
-/* 6. UPSMI (UPS Mail Innovations) -> VIOLET / PURPLE */
+/* 6. UPSMI (Violet / Purple) */
 .display-panel.carrier-upsmi {
-  background: radial-gradient(circle at center, #220f38 0%, #11071c 100%);
-  border: 5px solid #a855f7;
-  box-shadow: 0 0 60px rgba(168, 85, 247, 0.35), inset 0 0 25px rgba(168, 85, 247, 0.1);
+  background: var(--color-upsmi-bg);
+  border: 4px solid var(--color-upsmi);
+  box-shadow: 0 0 55px var(--color-upsmi-glow);
 }
 .display-panel.carrier-upsmi .status-pill {
-  background-color: #9333ea;
-  border-color: #a855f7;
-  color: #ffffff;
-  box-shadow: 0 2px 14px rgba(168, 85, 247, 0.5);
+  background-color: var(--color-upsmi);
+  border-color: var(--color-upsmi);
+  color: #1f0735;
 }
 .display-panel.carrier-upsmi .carrier-display {
-  color: #ffffff;
-  text-shadow: 0 4px 20px rgba(168, 85, 247, 0.4);
+  color: #e9d5ff;
 }
 
-/* 7. INTERNAL PRODUCTION JOB -> MARATHON RED */
+/* 7. INTERNAL PRODUCTION (Marathon Red) */
 .display-panel.carrier-internal {
-  background: radial-gradient(circle at center, #2b0b0e 0%, #140507 100%);
-  border: 5px solid var(--mp-red);
-  box-shadow: 0 0 60px rgba(211, 32, 42, 0.35), inset 0 0 25px rgba(211, 32, 42, 0.1);
+  background: var(--color-internal-bg);
+  border: 4px solid var(--color-internal);
+  box-shadow: 0 0 55px var(--color-internal-glow);
 }
 .display-panel.carrier-internal .status-pill {
-  background-color: var(--mp-red);
-  border-color: var(--mp-red);
+  background-color: var(--color-internal);
+  border-color: var(--color-internal);
   color: #ffffff;
 }
+.display-panel.carrier-internal .carrier-display {
+  color: #fecaca;
+}
 
-/* DANGER / UNRECOGNIZED BARCODE */
+/* ERROR / UNRECOGNIZED */
 .display-panel.danger {
-  background: radial-gradient(circle at center, #261114 0%, #140709 100%);
-  border: 5px solid #ef4444;
-  box-shadow: 0 0 60px rgba(239, 68, 68, 0.35);
+  background: radial-gradient(circle at center, #2e0d10 0%, #170406 100%);
+  border: 4px solid #ef4444;
+  box-shadow: 0 0 55px rgba(239, 68, 68, 0.25);
 }
 .display-panel.danger .status-pill {
   background-color: #ef4444;
@@ -360,11 +382,8 @@ html, body {
   color: #fca5a5;
   font-size: clamp(48px, 8vw, 110px);
 }
-.display-panel.danger .service-display {
-  color: #fca5a5;
-}
 
-/* Status Pill Shared */
+/* Status Pill Baseline */
 .badge-wrapper {
   margin-bottom: 20px;
 }
@@ -373,7 +392,7 @@ html, body {
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  padding: 8px 26px;
+  padding: 8px 24px;
   border-radius: 100px;
   background-color: #1e2430;
   border: 1px solid #323b4c;
@@ -388,22 +407,21 @@ html, body {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background-color: #ffffff;
+  background-color: currentColor;
 }
 
-/* Giant Carrier Typography */
+/* Giant Carrier Text */
 .carrier-display {
   font-size: clamp(68px, 13vw, 175px);
   font-weight: 900;
   letter-spacing: -2px;
-  color: #ffffff;
   line-height: 0.98;
   margin-bottom: 12px;
   max-width: 98%;
   word-break: break-word;
 }
 
-/* Secondary service line */
+/* Secondary Service Line */
 .service-display {
   font-size: clamp(22px, 3.2vw, 44px);
   font-weight: 600;
@@ -412,14 +430,18 @@ html, body {
   margin-bottom: 24px;
 }
 
-/* Monospace Scanned Barcode display tag */
+.display-panel.idle .service-display {
+  color: var(--text-dim);
+}
+
+/* Barcode Number readout */
 .barcode-tag {
   font-family: var(--font-mono);
   font-size: clamp(18px, 2.2vw, 32px);
   font-weight: 700;
   color: #ffffff;
-  background-color: rgba(0, 0, 0, 0.75);
-  border: 1px solid rgba(255, 255, 255, 0.25);
+  background-color: rgba(0, 0, 0, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   padding: 8px 26px;
   border-radius: 8px;
   letter-spacing: 2px;
@@ -427,9 +449,7 @@ html, body {
   word-break: break-all;
 }
 
-/* ==========================================================================
-   LOG DRAWER
-   ========================================================================== */
+/* History Drawer */
 .history-drawer {
   position: fixed;
   top: 66px;
@@ -531,11 +551,12 @@ html, body {
   font-size: 12px;
 }
 
-/* Color badges inside log table */
-.log-fedex-express { color: #ff9933; font-weight: 700; }
-.log-fedex-ground  { color: #34d399; font-weight: 700; }
-.log-ups           { color: #fbbf24; font-weight: 700; }
-.log-usps          { color: #60a5fa; font-weight: 700; }
-.log-dhl           { color: #facc15; font-weight: 700; }
-.log-upsmi         { color: #c084fc; font-weight: 700; }
-.tag-failed        { color: #f87171; font-weight: 700; }
+.tag-verified {
+  color: #4ade80;
+  font-weight: 700;
+}
+
+.tag-failed {
+  color: #f87171;
+  font-weight: 700;
+}
