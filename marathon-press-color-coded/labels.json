@@ -1,0 +1,68 @@
+[
+  {
+    "barcode": "9400150105800133120300",
+    "carrier": "USPS",
+    "destination": "USPS",
+    "service": "Postal Pickup"
+  },
+  {
+    "barcode": "9405511206214589218204",
+    "carrier": "USPS",
+    "destination": "USPS",
+    "service": "Postal Pickup"
+  },
+  {
+    "barcode": "879136980972",
+    "carrier": "FedEx",
+    "destination": "FedEx Express",
+    "service": "FedEx Express"
+  },
+  {
+    "barcode": "384322836030",
+    "carrier": "FedEx",
+    "destination": "FedEx Ground",
+    "service": "FedEx Ground"
+  },
+  {
+    "barcode": "384315914220",
+    "carrier": "FedEx",
+    "destination": "FedEx Ground",
+    "service": "FedEx Ground"
+  },
+  {
+    "barcode": "384322828226",
+    "carrier": "FedEx",
+    "destination": "FedEx Ground",
+    "service": "FedEx Ground"
+  },
+  {
+    "barcode": "420945239241990416101752551488",
+    "carrier": "DHL",
+    "destination": "DHL",
+    "service": "DHL eCommerce"
+  },
+  {
+    "barcode": "420891079241990416101752531039",
+    "carrier": "DHL",
+    "destination": "DHL",
+    "service": "DHL eCommerce"
+  },
+  {
+    "barcode": "803364829621565082",
+    "carrier": "UPSMI",
+    "destination": "UPSMI",
+    "service": "UPS Mail Innovations"
+  },
+  {
+    "barcode": "803364829634472023",
+    "carrier": "UPSMI",
+    "destination": "UPSMI",
+    "service": "UPS Mail Innovations"
+  },
+  {
+    "barcode": "1Z9999999999999999",
+    "carrier": "UPS",
+    "destination": "UPS",
+    "service": "UPS Pickup"
+  }
+]
